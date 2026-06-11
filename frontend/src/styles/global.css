@@ -747,3 +747,79 @@ body::before {
 .text-end { text-align: right; }
 .w-100 { width: 100%; }
 .d-inline { display: inline; }
+
+/* ── RESPONSIVE ── */
+
+/* Table horizontal scroll */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  /* Sidebar → bottom nav */
+  .sidebar {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100% !important;
+    height: 56px;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px;
+    gap: 0;
+    border-right: none;
+    border-top: 1px solid var(--border);
+  }
+  .sidebar:hover { width: 100% !important; }
+  .sidebar-logo { display: none; }
+  .nav-item {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    flex: 1;
+  }
+  .nav-item:hover, .nav-item.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--orange);
+  }
+  .nav-label {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    transition: none;
+  }
+  .sidebar:hover .nav-label {
+    opacity: 0;
+  }
+  .nav-icon { width: auto; font-size: 20px; }
+
+  /* Main content */
+  .main {
+    margin-left: 0;
+    padding: 24px 16px 72px;
+  }
+
+  /* Modal */
+  .modal-dialog {
+    max-width: calc(100% - 32px) !important;
+    margin: 16px !important;
+  }
+
+  /* Chat widget — keep above bottom nav */
+  .chat-widget { bottom: 64px; }
+}
+
+@media (max-width: 480px) {
+  /* Exam cards — allow wrapping */
+  .exam-card {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+  }
+}
+

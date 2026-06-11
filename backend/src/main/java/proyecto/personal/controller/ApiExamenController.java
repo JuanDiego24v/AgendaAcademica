@@ -2,6 +2,7 @@ package proyecto.personal.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import proyecto.personal.DTOs.EventoDTO;
 import proyecto.personal.dto.*;
 import proyecto.personal.model.Curso;
 import proyecto.personal.service.CursoService;
@@ -26,6 +27,11 @@ public class ApiExamenController {
         this.examenService = examenService;
         this.cursoService = cursoService;
         this.usuarioService = usuarioService;
+    }
+
+    @GetMapping("/eventos")
+    public List<EventoDTO> listarEventos() {
+        return examenService.obtenerEventos();
     }
 
     @GetMapping

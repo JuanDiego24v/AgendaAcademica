@@ -223,29 +223,31 @@ export default function Examenes() {
 
       {/* TABLA */}
       <div className="section-title">Exámenes del curso</div>
-      <table className="dark-table mb-5">
-        <thead>
-          <tr>
-            <th>Nombre</th><th>Fecha</th><th>Estado</th><th>Nota</th><th>%</th>
-            <th style={{ textAlign: 'right' }}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.examenes.map(e => (
-            <tr key={e.id}>
-              <td><span className="exam-name">{e.nombre}</span></td>
-              <td><span style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: 'var(--muted)' }}>{e.fecha}</span></td>
-              <td><span className={`badge-pill ${e.estado === 'COMPLETADO' ? 'badge-completado' : 'badge-pendiente'}`}>{e.estado === 'COMPLETADO' ? 'Revisado' : 'Pendiente'}</span></td>
-              <td>{e.nota != null ? <span className="nota-valor">{e.nota}</span> : <span className="nota-pendiente">—</span>}</td>
-              <td><span style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: 'var(--orange)' }}>{e.porcentaje}</span><span style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: 'var(--muted)' }}>%</span></td>
-              <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                <button className="btn-action btn-action-edit me-2" onClick={() => openEdit(e)}>Editar</button>
-                <button className="btn-action btn-action-delete" onClick={() => handleDelete(e.id)}>Eliminar</button>
-              </td>
+      <div className="table-responsive mb-5">
+        <table className="dark-table">
+          <thead>
+            <tr>
+              <th>Nombre</th><th>Fecha</th><th>Estado</th><th>Nota</th><th>%</th>
+              <th style={{ textAlign: 'right' }}>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.examenes.map(e => (
+              <tr key={e.id}>
+                <td><span className="exam-name">{e.nombre}</span></td>
+                <td><span style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: 'var(--muted)' }}>{e.fecha}</span></td>
+                <td><span className={`badge-pill ${e.estado === 'COMPLETADO' ? 'badge-completado' : 'badge-pendiente'}`}>{e.estado === 'COMPLETADO' ? 'Revisado' : 'Pendiente'}</span></td>
+                <td>{e.nota != null ? <span className="nota-valor">{e.nota}</span> : <span className="nota-pendiente">—</span>}</td>
+                <td><span style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: 'var(--orange)' }}>{e.porcentaje}</span><span style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: 'var(--muted)' }}>%</span></td>
+                <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <button className="btn-action btn-action-edit me-2" onClick={() => openEdit(e)}>Editar</button>
+                  <button className="btn-action btn-action-delete" onClick={() => handleDelete(e.id)}>Eliminar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* PROYECCIÓN */}
       {data.examenes.length > 0 && (

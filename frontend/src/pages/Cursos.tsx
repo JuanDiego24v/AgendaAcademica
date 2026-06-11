@@ -49,27 +49,29 @@ export default function Cursos() {
         <button className="btn-add ms-3" onClick={openAdd}>+ Añadir Curso</button>
       </div>
 
-      <table className="dark-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th style={{ textAlign: 'right' }}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cursos.length === 0 ? (
-            <tr className="empty-row"><td colSpan={2}>Aún no tienes cursos registrados</td></tr>
-          ) : cursos.map(c => (
-            <tr key={c.id}>
-              <td><span className="course-name">{c.nombre}</span></td>
-              <td style={{ textAlign: 'right' }}>
-                <button className="btn-action btn-action-edit me-2" onClick={() => openEdit(c)}>Editar</button>
-                <button className="btn-action btn-action-delete" onClick={() => handleDelete(c.id)}>Eliminar</button>
-              </td>
+      <div className="table-responsive">
+        <table className="dark-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th style={{ textAlign: 'right' }}>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {cursos.length === 0 ? (
+              <tr className="empty-row"><td colSpan={2}>Aún no tienes cursos registrados</td></tr>
+            ) : cursos.map(c => (
+              <tr key={c.id}>
+                <td><span className="course-name">{c.nombre}</span></td>
+                <td style={{ textAlign: 'right' }}>
+                  <button className="btn-action btn-action-edit me-2" onClick={() => openEdit(c)}>Editar</button>
+                  <button className="btn-action btn-action-delete" onClick={() => handleDelete(c.id)}>Eliminar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {modal.open && (
         <div className="modal-overlay" onClick={closeModal}>
