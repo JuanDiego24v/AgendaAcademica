@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard | Agenda Académica</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root {
+    --black:       #0a0a0a;
+    --black-soft:  #111111;
+    --black-card:  #161616;
+    --black-hover: #1e1e1e;
+    --orange:      #E87620;
+    --orange-glow: #ff8c2a;
+    --orange-dim:  #b85c14;
+    --orange-pale: rgba(232,118,32,0.08);
+    --orange-line: rgba(232,118,32,0.25);
+    --white:       #f0ede8;
+    --muted:       #6a6560;
+    --border:      rgba(255,255,255,0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.028;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed; left: 0; top: 0;
+    width: 72px; height: 100vh;
+    background: var(--black-soft);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 28px 0;
+    gap: 8px;
+    z-index: 100;
+    transition: width 0.35s cubic-bezier(.77,0,.18,1);
+  }
+  .sidebar:hover { width: 200px; }
+
+  .sidebar-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--orange);
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+    text-align: center;
+    padding: 0 16px;
+  }
+
+  .nav-item {
+    width: 100%;
+    display: flex; align-items: center;
+    gap: 14px;
+    padding: 12px 22px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.2s ease;
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    color: var(--white);
+    text-decoration: none;
+    user-select: none;
+  }
+  .nav-item:hover, .nav-item.active {
+    background: var(--orange-pale);
+    border-left-color: var(--orange);
+    color: var(--orange);
+  }
+  .nav-icon { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
+  .nav-label {
+    font-size: 13px; font-weight: 400; letter-spacing: 0.5px;
+    opacity: 0; transition: opacity 0.2s ease 0.1s;
+  }
+  .sidebar:hover .nav-label { opacity: 1; }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 72px;
+    padding: 48px 52px;
+    min-height: 100vh;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── HEADER ── */
+  .page-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0; animation: fadeUp 0.5s ease 0.1s both;
+  }
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 0.95;
+    letter-spacing: 1px;
+    color: var(--white);
+    opacity: 0; animation: fadeUp 0.5s ease 0.2s both;
+  }
+  .page-title span { color: var(--orange); }
+  .header-line {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+    margin: 28px 0 40px;
+    opacity: 0; animation: fadeIn 0.6s ease 0.4s both;
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-card {
+    background: var(--black-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+    opacity: 0; animation: fadeUp 0.5s ease both;
+  }
+  .stat-card:hover { transform: translateY(-3px); border-color: var(--orange-line); }
+  .stat-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 2px;
+    background: var(--orange);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .stat-card:hover::after { transform: scaleX(1); }
+
+  .stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--orange);
+  }
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'Space Mono', monospace;
+  }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── EXAM CARDS ── */
+  .exam-card {
+    background: var(--black-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 22px 24px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 20px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    position: relative;
+    overflow: hidden;
+    opacity: 0; animation: fadeUp 0.4s ease both;
+  }
+  .exam-card:hover {
+    background: var(--black-hover);
+    border-color: var(--orange-line);
+    transform: translateX(4px);
+  }
+  .exam-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0;
+    width: 3px; height: 100%;
+    background: var(--orange);
+    transform: scaleY(0); transition: transform 0.2s ease;
+  }
+  .exam-card:hover::before { transform: scaleY(1); }
+
+  .exam-subject {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--white);
+    flex: 1;
+    letter-spacing: 0.5px;
+  }
+  .exam-date { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--orange); white-space: nowrap; }
+  .exam-days { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  .badge-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+  .badge-urgent { background: rgba(220,40,40,0.15); color: #e05555; border: 1px solid rgba(220,40,40,0.3); }
+  .badge-soon   { background: rgba(232,118,32,0.12); color: var(--orange); border: 1px solid var(--orange-line); }
+  .badge-ok     { background: rgba(80,180,100,0.1); color: #6dba7d; border: 1px solid rgba(80,180,100,0.25); }
+  .badge-done   { background: rgba(100,100,100,0.1); color: var(--muted); border: 1px solid var(--border); }
+
+  /* ── PROGRESS BAR ── */
+  .prog-wrap { background: rgba(255,255,255,0.04); border-radius: 2px; height: 3px; overflow: hidden; margin-top: 6px; }
+  .prog-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange-dim), var(--orange-glow));
+    border-radius: 2px;
+    transition: width 1s cubic-bezier(.77,0,.18,1);
+  }
+
+  /* ── ADD BUTTON ── */
+  .btn-add {
+    background: var(--orange);
+    color: var(--black);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-add:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,118,32,0.35); color: var(--black); }
+  .btn-add:active { transform: translateY(0); }
+
+  /* ── MINI CALENDAR ── */
+  .calendar-card {
+    background: var(--black-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    height: 100%;
+  }
+  .cal-header {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1px;
+    color: var(--orange);
+    margin-bottom: 18px;
+  }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+  .cal-day-name { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; padding-bottom: 8px; }
+  .cal-day { font-size: 11px; padding: 6px 2px; border-radius: 2px; cursor: default; color: var(--muted); transition: background 0.15s; }
+  .cal-day.today { background: var(--orange); color: var(--black); font-weight: 700; border-radius: 2px; }
+  .cal-day.has-exam { color: var(--orange); font-weight: 500; position: relative; }
+  .cal-day.has-exam::after {
+    content: '·';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    color: var(--orange);
+    font-size: 14px;
+    line-height: 0.5;
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 9px 0;
+    margin-bottom: 44px;
+    opacity: 0; animation: fadeIn 0.5s ease 0.5s both;
+  }
+  .ticker-inner { display: flex; gap: 48px; animation: ticker 25s linear infinite; white-space: nowrap; }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .ticker-item {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .ticker-item span { color: var(--orange); margin-right: 8px; }
+
+  /* ── ANIM DELAYS ── */
+  .d1 { animation-delay: 0.3s; }
+  .d2 { animation-delay: 0.4s; }
+  .d3 { animation-delay: 0.5s; }
+  .d4 { animation-delay: 0.6s; }
+  .d5 { animation-delay: 0.35s; }
+  .d6 { animation-delay: 0.45s; }
+  .d7 { animation-delay: 0.55s; }
+  .d8 { animation-delay: 0.65s; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--orange-dim); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">AA</div>
+
+  <div class="nav-item active">
+    <span class="nav-icon">⊟</span>
+    <span class="nav-label">Dashboard</span>
+  </div>
+  <a class="nav-item" href="/cursos">
+    <span class="nav-icon">◈</span>
+    <span class="nav-label">Cursos</span>
+  </a>
+  <a class="nav-item" href="/examenes">
+    <span class="nav-icon">✦</span>
+    <span class="nav-label">Exámenes</span>
+  </a>
+  <a class="nav-item" href="/calendario">
+    <span class="nav-icon">◫</span>
+    <span class="nav-label">Calendario</span>
+  </a>
+  <a class="nav-item" href="/change-password" style="margin-top:auto">
+    <span class="nav-icon">⚙</span>
+    <span class="nav-label">Contraseña</span>
+  </a>
+  <div class="nav-item" onclick="document.getElementById('logoutForm').submit()">
+    <span class="nav-icon">⏻</span>
+    <span class="nav-label">Logout</span>
+  </div>
+</nav>
+
+<form id="logoutForm" th:action="@{/logout}" method="post" style="display:none">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+</form>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- Header -->
+  <div class="page-eyebrow">Ciclo 2026 — I</div>
+  <h1 class="page-title">AGENDA<br><span>ACADÉMICA</span></h1>
+
+  <!-- Ticker -->
+  <div class="ticker-wrap mt-4" id="tickerWrap">
+    <div class="ticker-inner" id="tickerInner">
+      <!-- Filled by JS from backend data -->
+    </div>
+  </div>
+
+  <div class="header-line"></div>
+
+  <!-- STAT CARDS -->
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+      <div class="stat-card d1">
+        <div class="stat-number" id="statTotal">
+          <span th:text="${#lists.size(proximosExamenes)}">0</span>
+        </div>
+        <div class="stat-label">Próximos exámenes</div>
+        <div class="prog-wrap mt-3">
+          <div class="prog-bar" id="progTotal" style="width:0%"></div>
+        </div>
+        <div class="stat-sub" id="statTotalSub">cargando...</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card d2">
+        <div class="stat-number" id="statSemana">0</div>
+        <div class="stat-label">Próximos 7 días</div>
+        <div class="stat-sub" id="statSemanaSub" style="color:var(--orange); margin-top:10px">calculando...</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card d3">
+        <div class="stat-number" id="statDias">—</div>
+        <div class="stat-label">Días al próximo</div>
+        <div class="prog-wrap mt-3">
+          <div class="prog-bar" id="progDias" style="width:0%"></div>
+        </div>
+        <div class="stat-sub" id="statDiasSub">—</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card d4">
+        <div class="stat-number" id="statUrgentes">0</div>
+        <div class="stat-label">Urgentes</div>
+        <div class="stat-sub" id="statUrgentesSub" style="color:#e05555; margin-top:10px">menos de 7 días</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- EXAM LIST -->
+    <div class="col-12 col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="section-title" style="flex:1">Exámenes programados</div>
+        <a href="/examenes?openModal=true" class="btn-add ms-3">+ Agregar</a>
+      </div>
+
+      <div th:if="${#lists.isEmpty(proximosExamenes)}"
+           class="exam-card d5" style="justify-content:center;color:var(--muted);font-family:'Space Mono',monospace;font-size:12px">
+        No hay exámenes próximos — ¡vas bien!
+      </div>
+
+      <div th:each="ex, iterStat : ${proximosExamenes}"
+           class="exam-card"
+           th:with="daysLeft=${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), ex.fecha)}"
+           th:classappend="'d' + ${iterStat.index + 5}">
+        <div style="flex:1">
+          <div class="exam-subject" th:text="${ex.nombre}"></div>
+          <div class="exam-days" th:text="${ex.curso.nombre}"></div>
+        </div>
+        <div class="text-end">
+          <div class="exam-date" th:text="${#temporals.format(ex.fecha, 'dd MMM yyyy').toUpperCase()}"></div>
+          <div class="exam-days mt-1">
+            En <span th:text="${daysLeft}"></span> días
+          </div>
+        </div>
+        <span class="badge-pill"
+              th:classappend="${daysLeft < 7 ? 'badge-urgent' : (daysLeft < 14 ? 'badge-soon' : (daysLeft < 30 ? 'badge-ok' : 'badge-done'))}"
+              th:text="${daysLeft < 7 ? 'Urgente' : (daysLeft < 14 ? 'Próximo' : (daysLeft < 30 ? 'Listo' : 'Planificado'))}">
+        </span>
+      </div>
+    </div>
+
+    <!-- CALENDAR + QUICK STATS -->
+    <div class="col-12 col-lg-4">
+
+      <!-- Mini Calendar -->
+      <div class="calendar-card mb-3"
+           style="opacity:0; animation: fadeUp 0.5s ease 0.6s both">
+        <div class="cal-header" id="calHeader"></div>
+        <div class="cal-grid" id="calGrid">
+          <div class="cal-day-name">L</div>
+          <div class="cal-day-name">M</div>
+          <div class="cal-day-name">X</div>
+          <div class="cal-day-name">J</div>
+          <div class="cal-day-name">V</div>
+          <div class="cal-day-name">S</div>
+          <div class="cal-day-name">D</div>
+        </div>
+      </div>
+
+      <!-- Quick info: próximos exámenes resumidos -->
+      <div class="calendar-card"
+           style="opacity:0; animation: fadeUp 0.5s ease 0.7s both; padding:20px"
+           th:if="${!#lists.isEmpty(proximosExamenes)}">
+        <div class="section-title">Más próximos</div>
+        <div th:each="ex, i : ${proximosExamenes}"
+             th:if="${i.index < 3}"
+             style="margin-bottom:14px"
+             th:with="daysLeft=${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), ex.fecha)}">
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px">
+            <span style="font-family:'Space Mono',monospace; font-size:11px" th:text="${ex.nombre}"></span>
+            <span style="font-family:'Space Mono',monospace; font-size:11px"
+                  th:style="${daysLeft < 7 ? 'color:#e05555' : (daysLeft < 14 ? 'color:var(--orange)' : 'color:#6dba7d')}"
+                  th:text="${daysLeft + 'd'}"></span>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-bar"
+                 th:style="${'width:' + (daysLeft < 7 ? '85' : (daysLeft < 14 ? '55' : '25')) + '%; background:' + (daysLeft < 7 ? 'linear-gradient(90deg,#a03010,#e05030)' : (daysLeft < 14 ? 'linear-gradient(90deg,var(--orange-dim),var(--orange))' : 'linear-gradient(90deg,#2a7a3a,#6dba7d)'))}">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calendar-card"
+           style="opacity:0; animation: fadeUp 0.5s ease 0.7s both; padding:20px"
+           th:if="${#lists.isEmpty(proximosExamenes)}">
+        <div class="section-title">Estado</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:#6dba7d;letter-spacing:1px">
+          Sin exámenes próximos
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- Datos para JS (inyectados desde backend) -->
+<script th:inline="javascript">
+  const examDates = [];
+  /*[# th:each="ex : ${proximosExamenes}"]*/
+  examDates.push({
+    nombre: /*[[${ex.nombre}]]*/ '',
+    fecha: /*[[${ex.fecha}]]*/ '',
+    curso: /*[[${ex.curso.nombre}]]*/ '',
+    dias: /*[[${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), ex.fecha)}]]*/ 0
+  });
+  /*[/]*/
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── TICKER ──
+  (function buildTicker() {
+    const inner = document.getElementById('tickerInner');
+    const items = examDates.length > 0
+      ? examDates.map(e => `<span class="ticker-item"><span>▶</span> PRÓXIMO: ${e.nombre} — ${e.fecha}</span>`)
+      : [];
+
+    items.push('<span class="ticker-item"><span>▶</span> AGENDA ACADÉMICA</span>');
+    if (examDates.length > 0) {
+      const urgentes = examDates.filter(e => e.dias <= 7).length;
+      if (urgentes > 0) items.push(`<span class="ticker-item"><span>▶</span> ${urgentes} EXAMEN${urgentes > 1 ? 'ES' : ''} URGENTE${urgentes > 1 ? 'S' : ''}</span>`);
+    }
+
+    const content = [...items, ...items].join('');
+    inner.innerHTML = content;
+  })();
+
+  // ── STAT CARDS ──
+  (function updateStats() {
+    const total = examDates.length;
+    const enSemana = examDates.filter(e => e.dias >= 0 && e.dias <= 7).length;
+    const urgentes = examDates.filter(e => e.dias >= 0 && e.dias <= 7).length;
+    const siguiente = examDates.length > 0 ? examDates[0] : null;
+
+    document.getElementById('statTotal').textContent = String(total).padStart(2, '0');
+    document.getElementById('statTotalSub').textContent = total === 0 ? 'ninguno próximo' : (total === 1 ? '1 examen próximo' : total + ' exámenes próximos');
+
+    document.getElementById('statSemana').textContent = String(enSemana).padStart(2, '0');
+    document.getElementById('statSemanaSub').textContent = enSemana > 0 ? '⚡ Alta carga' : '✓ Tranquilo';
+    document.getElementById('statSemanaSub').style.color = enSemana > 0 ? 'var(--orange)' : '#6dba7d';
+
+    if (siguiente) {
+      document.getElementById('statDias').textContent = String(siguiente.dias).padStart(2, '0');
+      document.getElementById('statDiasSub').textContent = siguiente.nombre;
+      const pct = Math.max(5, Math.min(100, 100 - (siguiente.dias / 30 * 100)));
+      document.getElementById('progDias').style.width = pct + '%';
+    } else {
+      document.getElementById('statDias').textContent = '—';
+      document.getElementById('statDiasSub').textContent = 'sin exámenes';
+    }
+
+    document.getElementById('statUrgentes').textContent = String(urgentes).padStart(2, '0');
+    if (urgentes === 0) {
+      document.getElementById('statUrgentesSub').textContent = 'ninguno urgente';
+      document.getElementById('statUrgentesSub').style.color = '#6dba7d';
+    }
+
+    const progTotal = document.getElementById('progTotal');
+    progTotal.style.width = total > 0 ? Math.min(100, (total / 10) * 100) + '%' : '0%';
+  })();
+
+  // ── MINI CALENDAR ──
+  (function buildCalendar() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+
+    const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    document.getElementById('calHeader').textContent = monthNames[month] + ' ' + year;
+
+    const examDays = new Set();
+    examDates.forEach(e => {
+      const d = new Date(e.fecha);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        examDays.add(d.getDate());
+      }
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const grid = document.getElementById('calGrid');
+    for (let i = 0; i < offset; i++) {
+      grid.insertAdjacentHTML('beforeend', '<div></div>');
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const classes = ['cal-day'];
+      if (d === today) classes.push('today');
+      else if (examDays.has(d)) classes.push('has-exam');
+      grid.insertAdjacentHTML('beforeend', `<div class="${classes.join(' ')}">${d}</div>`);
+    }
+  })();
+
+  // ── ANIMATE PROGRESS BARS ──
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.prog-bar').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0';
+        requestAnimationFrame(() => { setTimeout(() => { bar.style.width = w; }, 50); });
+      });
+    }, 600);
+  });
+</script>
+
+</body>
+</html>
