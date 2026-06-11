@@ -815,11 +815,25 @@ body::before {
   .chat-widget { bottom: 64px; }
 }
 
+@media (max-width: 768px) {
+  /* FullCalendar — toolbar wraps and height is released */
+  .fc-toolbar { flex-wrap: wrap !important; gap: 6px !important; justify-content: center !important; }
+  .fc-toolbar-chunk { display: flex; justify-content: center; }
+  .fc-toolbar-title { font-size: 22px !important; }
+  .fc-view-harness { height: auto !important; min-height: 350px !important; }
+  .calendar-container { padding: 12px; }
+}
+
 @media (max-width: 480px) {
   /* Exam cards — allow wrapping */
   .exam-card {
     flex-wrap: wrap;
     padding: 14px 16px;
   }
+
+  /* Proyección sliders — stack vertically */
+  .proy-exam-row { flex-wrap: wrap; gap: 8px; }
+  .proy-exam-info { min-width: unset !important; width: 100%; }
+  .proy-slider-wrap { width: 100%; }
 }
 
