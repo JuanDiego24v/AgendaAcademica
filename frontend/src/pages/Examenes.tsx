@@ -134,7 +134,7 @@ export default function Examenes() {
 
   if (!data) return <Layout><div style={{ color: 'var(--muted)', fontFamily: "'Space Mono',monospace", fontSize: 12 }}>Cargando...</div></Layout>;
 
-  const ExamenFormFields = ({ prefix }: { prefix: string }) => (
+  const ExamenFormFields = ({ prefix: _ }: { prefix: string }) => (
     <>
       <div className="mb-3">
         <label className="form-label">Nombre</label>

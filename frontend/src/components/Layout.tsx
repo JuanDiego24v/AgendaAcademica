@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import WelcomeModal from './WelcomeModal';
 import { useAuth } from '../context/AuthContext';
