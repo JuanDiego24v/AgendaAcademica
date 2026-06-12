@@ -17,9 +17,9 @@ public class Curso {
     @Column(nullable = false)
     private int peso = 1;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "periodo_id", nullable = false)
+    private Periodo periodo;
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Examen> examenes;
@@ -49,12 +49,12 @@ public class Curso {
         this.peso = peso;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Periodo getPeriodo() {
+        return periodo;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setPeriodo(Periodo periodo) {
+        this.periodo = periodo;
     }
 
     public List<Examen> getExamenes() {

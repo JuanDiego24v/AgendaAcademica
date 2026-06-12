@@ -1,13 +1,12 @@
 package proyecto.personal.service;
 
 import proyecto.personal.model.Curso;
+import proyecto.personal.model.Periodo;
 import proyecto.personal.model.Usuario;
 import proyecto.personal.repository.CursoRepository;
 import proyecto.personal.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,33 +16,24 @@ public class CursoService {
 
     private final CursoRepository cursoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final PeriodoService periodoService;
 
     public CursoService(CursoRepository cursoRepository,
-                        UsuarioRepository usuarioRepository) {
+                        UsuarioRepository usuarioRepository,
+                        PeriodoService periodoService) {
 
         this.cursoRepository = cursoRepository;
         this.usuarioRepository = usuarioRepository;
-    }
-
-    // USUARIO ACTUAL
-
-    private Usuario obtenerUsuarioActual() {
-
-        Authentication auth =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        return usuarioRepository
-                .findByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        this.periodoService = periodoService;
     }
 
     // GUARDAR CURSO
 
     public Curso guardar(Curso curso) {
 
-        Usuario usuario = obtenerUsuarioActual();
+        Periodo periodo = periodoService.obtenerActivoOrThrow();
 
-        curso.setUsuario(usuario);
+        curso.setPeriodo(periodo);
 
         return cursoRepository.save(curso);
     }
@@ -52,10 +42,10 @@ public class CursoService {
 
     public Curso actualizar(Long id, String nombre) {
 
-        Usuario usuario = obtenerUsuarioActual();
+        Periodo periodo = periodoService.obtenerActivoOrThrow();
 
         Curso cursoExistente = cursoRepository
-                .findByIdAndUsuarioId(id, usuario.getId())
+                .findByIdAndPeriodoId(id, periodo.getId())
                 .orElseThrow(() ->
                         new RuntimeException("Curso no encontrado"));
 
@@ -68,9 +58,9 @@ public class CursoService {
 
     public List<Curso> listarCursosDelUsuarioActual() {
 
-        Usuario usuario = obtenerUsuarioActual();
+        Periodo periodo = periodoService.obtenerActivoOrThrow();
 
-        return cursoRepository.findByUsuarioId(usuario.getId());
+        return cursoRepository.findByPeriodoId(periodo.getId());
     }
 
     // BUSCAR CURSO POR ID
@@ -83,10 +73,10 @@ public class CursoService {
 
     public Curso buscarCursoDelUsuarioActual(Long id) {
 
-        Usuario usuario = obtenerUsuarioActual();
+        Periodo periodo = periodoService.obtenerActivoOrThrow();
 
         return cursoRepository
-                .findByIdAndUsuarioId(id, usuario.getId())
+                .findByIdAndPeriodoId(id, periodo.getId())
                 .orElseThrow(() ->
                         new RuntimeException("Curso no encontrado o no autorizado"));
     }
@@ -109,7 +99,10 @@ public class CursoService {
                 .orElseThrow(() ->
                         new RuntimeException("Usuario no encontrado"));
 
-        curso.setUsuario(usuario);
+        Periodo periodo = periodoService.obtenerActivo()
+                .orElseThrow(() -> new RuntimeException("Sin periodo activo para el usuario"));
+
+        curso.setPeriodo(periodo);
 
         cursoRepository.save(curso);
     }

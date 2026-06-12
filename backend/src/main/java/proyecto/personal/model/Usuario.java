@@ -37,10 +37,10 @@ public class Usuario implements UserDetails {
     @Column(name = "nota_minima", nullable = false)
     private Double notaMinimaAprobatoria = 12.0;
 
-    // RELACIÓN CON CURSOS
+    // RELACIÓN CON PERIODOS
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Curso> cursos;
+    private List<Periodo> periodos;
 
     // GETTERS Y SETTERS
 
@@ -102,12 +102,12 @@ public class Usuario implements UserDetails {
         this.enabled = enabled;
     }
 
-    public List<Curso> getCursos() {
-        return cursos;
+    public List<Periodo> getPeriodos() {
+        return periodos;
     }
 
-    public void setCursos(List<Curso> cursos) {
-        this.cursos = cursos;
+    public void setPeriodos(List<Periodo> periodos) {
+        this.periodos = periodos;
     }
 
     // MÉTODOS DE SPRING SECURITY

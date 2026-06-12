@@ -54,10 +54,12 @@ function MiniCalendar({ examenes }: { examenes: Examen[] }) {
 
 export default function Home() {
   const [examenes, setExamenes] = useState<Examen[]>([]);
+  const [periodoNombre, setPeriodoNombre] = useState<string>('');
   const progRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     client.get<Examen[]>('/api/home/proximos').then(r => setExamenes(r.data)).catch(() => {});
+    client.get<{ nombre: string }>('/api/periodos/activo').then(r => setPeriodoNombre(r.data.nombre)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="page-eyebrow">Ciclo 2026 — I</div>
+      <div className="page-eyebrow">{periodoNombre || 'Sin periodo activo'}</div>
       <h1 className="page-title">AGENDA<br /><span>ACADÉMICA</span></h1>
 
       <div className="ticker-wrap mt-4">

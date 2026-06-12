@@ -8,6 +8,7 @@ import Cursos from './pages/Cursos';
 import Examenes from './pages/Examenes';
 import Calendario from './pages/Calendario';
 import ChangePassword from './pages/ChangePassword';
+import Perfil from './pages/Perfil';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/examenes" element={<ProtectedRoute><Examenes /></ProtectedRoute>} />
           <Route path="/calendario" element={<ProtectedRoute><Calendario /></ProtectedRoute>} />
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+          <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </BrowserRouter>

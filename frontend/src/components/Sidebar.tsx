@@ -33,12 +33,12 @@ export default function Sidebar() {
       ))}
 
       <NavLink
-        to="/change-password"
+        to="/perfil"
         className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
         style={{ marginTop: 'auto' }}
       >
         <span className="nav-icon">⚙</span>
-        <span className="nav-label">Contraseña</span>
+        <span className="nav-label">Configuración</span>
       </NavLink>
 
       <button className="nav-item" onClick={handleLogout}>

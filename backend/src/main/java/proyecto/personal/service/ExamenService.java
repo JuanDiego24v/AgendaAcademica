@@ -5,7 +5,6 @@ import proyecto.personal.model.Curso;
 import proyecto.personal.model.Examen;
 import proyecto.personal.model.Usuario;
 import proyecto.personal.repository.ExamenRepository;
-import proyecto.personal.repository.CursoRepository;
 import proyecto.personal.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
@@ -19,16 +18,16 @@ import java.util.Optional;
 public class ExamenService {
 
     private final ExamenRepository examenRepository;
-    private final CursoRepository cursoRepository;
+    private final CursoService cursoService;
     private final UsuarioRepository usuarioRepository;
 
     public ExamenService(
             ExamenRepository examenRepository,
-            CursoRepository cursoRepository,
+            CursoService cursoService,
             UsuarioRepository usuarioRepository) {
 
         this.examenRepository = examenRepository;
-        this.cursoRepository = cursoRepository;
+        this.cursoService = cursoService;
         this.usuarioRepository = usuarioRepository;
     }
 
@@ -45,15 +44,6 @@ public class ExamenService {
         return usuarioRepository
                 .findByUsername(obtenerUsernameActual())
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
-    }
-
-    private Curso obtenerCursoDelUsuario(Long cursoId) {
-
-        Usuario usuario = obtenerUsuarioActual();
-
-        return cursoRepository
-                .findByIdAndUsuarioId(cursoId, usuario.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Curso no autorizado"));
     }
 
     // VALIDACIONES
@@ -103,7 +93,7 @@ public class ExamenService {
             String estado) {
 
         Usuario usuario = obtenerUsuarioActual();
-        Curso curso = obtenerCursoDelUsuario(cursoId);
+        Curso curso = cursoService.buscarCursoDelUsuarioActual(cursoId);
 
         if ("COMPLETADO".equals(estado)) {
             validarNota(nota, usuario);
@@ -117,7 +107,6 @@ public class ExamenService {
         examen.setNota("COMPLETADO".equals(estado) ? nota : null);
         examen.setPorcentaje(porcentaje);
         examen.setEstado(estado != null ? estado : "PENDIENTE");
-        examen.setUsuario(usuario);
         examen.setCurso(curso);
 
         return examenRepository.save(examen);
@@ -130,7 +119,7 @@ public class ExamenService {
         Usuario usuario = obtenerUsuarioActual();
 
         Examen examen = examenRepository
-                .findByIdAndUsuarioId(examenId, usuario.getId())
+                .findByIdAndCursoPeriodoUsuarioId(examenId, usuario.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Examen no autorizado"));
 
         validarNota(nuevaNota, usuario);
@@ -145,15 +134,12 @@ public class ExamenService {
     public List<Examen> listarExamenesDelUsuarioActual() {
 
         Usuario usuario = obtenerUsuarioActual();
-        return examenRepository.findByUsuarioId(usuario.getId());
+        return examenRepository.findByCursoPeriodoUsuarioId(usuario.getId());
     }
 
     public List<Examen> listarPorCurso(Long cursoId) {
 
-        Usuario usuario = obtenerUsuarioActual();
-
-        return examenRepository
-                .findByCursoIdAndUsuarioId(cursoId, usuario.getId());
+        return examenRepository.findByCursoId(cursoId);
     }
 
     public Optional<Examen> buscarPorId(Long id) {
@@ -161,7 +147,7 @@ public class ExamenService {
         Usuario usuario = obtenerUsuarioActual();
 
         return examenRepository
-                .findByIdAndUsuarioId(id, usuario.getId());
+                .findByIdAndCursoPeriodoUsuarioId(id, usuario.getId());
     }
 
     public Examen buscarExamenDelUsuarioActual(Long id) {
@@ -169,7 +155,7 @@ public class ExamenService {
         Usuario usuario = obtenerUsuarioActual();
 
         return examenRepository
-                .findByIdAndUsuarioId(id, usuario.getId())
+                .findByIdAndCursoPeriodoUsuarioId(id, usuario.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Examen no autorizado"));
     }
 
