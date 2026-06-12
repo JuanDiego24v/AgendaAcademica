@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ChatWidget from './components/ChatWidget';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
@@ -9,6 +10,11 @@ import Examenes from './pages/Examenes';
 import Calendario from './pages/Calendario';
 import ChangePassword from './pages/ChangePassword';
 import Perfil from './pages/Perfil';
+
+function GlobalWidgets() {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <ChatWidget /> : null;
+}
 
 export default function App() {
   return (
@@ -25,6 +31,7 @@ export default function App() {
           <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
+        <GlobalWidgets />
       </BrowserRouter>
     </AuthProvider>
   );

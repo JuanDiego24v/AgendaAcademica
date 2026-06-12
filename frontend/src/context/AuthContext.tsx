@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import client from '../api/client';
+
+export interface PeriodoActivo {
+  id: number;
+  nombre: string;
+  fechaInicio: string;
+  semanas: number;
+}
 
 interface AuthState {
   token: string | null;
@@ -9,15 +17,42 @@ interface AuthContextType extends AuthState {
   login: (token: string, username: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  periodoActivo: PeriodoActivo | null;
+  cargandoPeriodo: boolean;
+  refreshPeriodo: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+async function fetchPeriodo(): Promise<PeriodoActivo | null> {
+  try {
+    const r = await client.get<PeriodoActivo>('/api/periodos/activo');
+    return r.data;
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<AuthState>({
     token: localStorage.getItem('token'),
     username: localStorage.getItem('username'),
   });
+  const [periodoActivo, setPeriodoActivo] = useState<PeriodoActivo | null>(null);
+  const [cargandoPeriodo, setCargandoPeriodo] = useState(!!localStorage.getItem('token'));
+
+  useEffect(() => {
+    if (auth.token) {
+      setCargandoPeriodo(true);
+      fetchPeriodo().then(p => {
+        setPeriodoActivo(p);
+        setCargandoPeriodo(false);
+      });
+    } else {
+      setPeriodoActivo(null);
+      setCargandoPeriodo(false);
+    }
+  }, [auth.token]);
 
   const login = (token: string, username: string) => {
     localStorage.setItem('token', token);
@@ -29,10 +64,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     setAuth({ token: null, username: null });
+    setPeriodoActivo(null);
+  };
+
+  const refreshPeriodo = async () => {
+    const p = await fetchPeriodo();
+    setPeriodoActivo(p);
   };
 
   return (
-    <AuthContext.Provider value={{ ...auth, login, logout, isAuthenticated: !!auth.token }}>
+    <AuthContext.Provider value={{
+      ...auth, login, logout,
+      isAuthenticated: !!auth.token,
+      periodoActivo, cargandoPeriodo, refreshPeriodo,
+    }}>
       {children}
     </AuthContext.Provider>
   );
