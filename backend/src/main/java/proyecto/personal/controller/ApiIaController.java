@@ -41,6 +41,21 @@ public class ApiIaController {
         return Map.of("respuesta", response.respuesta(), "updated", response.updated());
     }
 
+    @PostMapping("/silabo/importar")
+    public ResponseEntity<?> importarSilabo(@RequestParam("file") MultipartFile file) {
+        try {
+            PdfExtractorService.ImportResult result = pdfExtractorService.extraerCursoYExamenes(file);
+            String msg = "Curso \"" + result.nombreCurso() + "\" creado con " + result.examenesCreados() + " examen" + (result.examenesCreados() != 1 ? "es" : "") + ".";
+            if (result.sinFecha() > 0) {
+                msg += " " + result.sinFecha() + " examen" + (result.sinFecha() != 1 ? "es" : "") + " no tenían fecha clara — revisalos en la sección Exámenes.";
+            }
+            return ResponseEntity.ok(Map.of("message", msg, "updated", true));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Error al procesar el sílabo: " + e.getMessage(), "updated", false));
+        }
+    }
+
     @PostMapping("/silabo/subir")
     public ResponseEntity<?> subirSilabo(
             @RequestParam("file") MultipartFile file,

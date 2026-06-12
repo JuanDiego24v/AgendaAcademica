@@ -6,10 +6,16 @@ interface ChatMessage { text: string; sender: 'bot' | 'user'; }
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { text: '¡Hola! Soy tu asistente IA. ¿En qué puedo ayudarte?', sender: 'bot' },
+    { text: '¡Hola! Soy tu asistente IA. Podés preguntarme sobre la app o subir un PDF de sílabo para importar el curso y sus exámenes automáticamente.', sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
+  const [uploading, setUploading] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const scrollToBottom = () => {
+    setTimeout(() => { if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight; }, 50);
+  };
 
   const send = async () => {
     const text = input.trim();
@@ -26,7 +32,43 @@ export default function ChatWidget() {
     } catch {
       setMessages(m => [...m, { text: 'Error al conectar con la IA.', sender: 'bot' }]);
     }
-    setTimeout(() => { if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight; }, 50);
+    scrollToBottom();
+  };
+
+  const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setMessages(m => [...m, { text: `📄 ${file.name}`, sender: 'user' }]);
+    setMessages(m => [...m, { text: 'Procesando sílabo, un momento...', sender: 'bot' }]);
+    scrollToBottom();
+
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const { data } = await client.post<{ message: string; updated: boolean }>(
+        '/api/ia/silabo/importar',
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      );
+      setMessages(m => {
+        const copy = [...m];
+        copy[copy.length - 1] = { text: data.message, sender: 'bot' };
+        return copy;
+      });
+      if (data.updated) setTimeout(() => window.location.reload(), 1500);
+    } catch {
+      setMessages(m => {
+        const copy = [...m];
+        copy[copy.length - 1] = { text: 'Error al procesar el PDF. Verificá que sea un sílabo con texto legible.', sender: 'bot' };
+        return copy;
+      });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+    scrollToBottom();
   };
 
   return (
@@ -45,11 +87,25 @@ export default function ChatWidget() {
           </div>
           <div className="chat-input-area">
             <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf"
+              style={{ display: 'none' }}
+              onChange={handlePdf}
+            />
+            <button
+              className="chat-pdf"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              title="Subir sílabo PDF"
+            >📎</button>
+            <input
               type="text" className="chat-input" placeholder="Escribe tu duda..."
               value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send()}
+              disabled={uploading}
             />
-            <button className="chat-submit" onClick={send}>➤</button>
+            <button className="chat-submit" onClick={send} disabled={uploading}>➤</button>
           </div>
           <div className="chat-disclaimer">IA solo para entorno web · puede cometer errores</div>
         </div>
