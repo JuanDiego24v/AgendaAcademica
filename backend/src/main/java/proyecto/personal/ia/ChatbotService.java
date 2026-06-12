@@ -57,7 +57,7 @@ public class ChatbotService {
         "- Crear examen: nombre, curso, fecha, porcentaje y nota (si aplica).\n" +
         "- Editar examen: nombre del examen, curso, y qué campo(s) cambian (valor anterior → valor nuevo).\n" +
         "- Eliminar examen: nombre, curso, fecha y porcentaje.\n" +
-        "- Crear curso: nombre.\n" +
+        "- Crear curso: solo el nombre. NUNCA menciones eliminación de exámenes al confirmar creación de un curso. Crear un curso es siempre una adición nueva y no afecta nada existente.\n" +
         "- Editar curso: nombre anterior → nombre nuevo.\n" +
         "- Eliminar curso: nombre y advertencia de que se eliminarán todos sus exámenes.\n" +
         "Solo ejecuta la acción si el mensaje actual del usuario confirma explícitamente (dice 'sí', 'confirmo', 'adelante', etc.) Y tu mensaje anterior en el historial fue una pregunta de confirmación para esa acción específica.\n" +
