@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import client from '../api/client';
@@ -25,8 +25,6 @@ interface ExamenForm {
 
 const emptyForm: ExamenForm = { nombre: '', fecha: '', porcentaje: '', estado: 'PENDIENTE', nota: '' };
 
-interface ChatMessage { text: string; sender: 'bot' | 'user'; }
-
 export default function Examenes() {
   const [params, setParams] = useSearchParams();
   const [data, setData] = useState<PageData | null>(null);
@@ -37,10 +35,6 @@ export default function Examenes() {
   const [form, setForm] = useState<ExamenForm>(emptyForm);
   const [sistemaForm, setSistemaForm] = useState({ notaMaxima: '', notaMinimaAprobatoria: '' });
   const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([{ text: '¡Hola! Soy tu asistente IA. ¿En qué puedo ayudarte?', sender: 'bot' }]);
-  const [chatInput, setChatInput] = useState('');
-  const chatBodyRef = useRef<HTMLDivElement>(null);
   const silaboPending = params.get('openModal') === 'true';
 
   const cursoId = Number(params.get('cursoId') || 0);
@@ -120,21 +114,6 @@ export default function Examenes() {
     await client.post('/api/ia/silabo/subir', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
     setShowAddModal(false);
     load();
-  };
-
-  const sendChat = async () => {
-    const text = chatInput.trim();
-    if (!text) return;
-    setMessages(m => [...m, { text, sender: 'user' }]);
-    setChatInput('');
-    try {
-      const { data: r } = await client.post<{ respuesta: string; updated: boolean }>('/api/ia/chatbot/ask', { mensaje: text, historial: messages });
-      setMessages(m => [...m, { text: r.respuesta, sender: 'bot' }]);
-      if (r.updated) load();
-    } catch {
-      setMessages(m => [...m, { text: 'Error al conectar con la IA.', sender: 'bot' }]);
-    }
-    setTimeout(() => { if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight; }, 50);
   };
 
   const sliderBg = (e: Examen) => {
@@ -365,32 +344,6 @@ export default function Examenes() {
         </div>
       )}
 
-      {/* CHATBOT */}
-      <div className="chat-widget">
-        <button className="chat-btn" onClick={() => setChatOpen(o => !o)}>💬</button>
-        {chatOpen && (
-          <div className="chat-window">
-            <div className="chat-header">
-              <span>Asistente IA</span>
-              <button className="chat-close" onClick={() => setChatOpen(false)}>✕</button>
-            </div>
-            <div className="chat-body" ref={chatBodyRef}>
-              {messages.map((m, i) => (
-                <div key={i} className={`chat-message ${m.sender}`}>{m.text}</div>
-              ))}
-            </div>
-            <div className="chat-input-area">
-              <input
-                type="text" className="chat-input" placeholder="Escribe tu duda..."
-                value={chatInput} onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendChat()}
-              />
-              <button className="chat-submit" onClick={sendChat}>➤</button>
-            </div>
-            <div className="chat-disclaimer">IA solo para entorno web · puede cometer errores</div>
-          </div>
-        )}
-      </div>
     </Layout>
   );
 }
