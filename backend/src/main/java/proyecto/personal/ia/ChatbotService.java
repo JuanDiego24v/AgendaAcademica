@@ -48,6 +48,13 @@ public class ChatbotService {
 
         "IMPORTANTE al editar exámenes: si el usuario solo pide cambiar un campo (ej: la nota), usa los valores existentes del examen para los demás campos.\n\n" +
 
+        "ESTADOS DE EXÁMENES:\n" +
+        "Solo existen dos estados posibles:\n" +
+        "- PENDIENTE: el examen todavía no fue rendido o no tiene nota registrada.\n" +
+        "- COMPLETADO: el examen fue rendido y tiene una nota asignada. Se muestra como 'Revisado' en la app.\n" +
+        "Si el usuario pide un estado que no existe (ej: 'falta revisar', 'por revisar', 'revisado sin nota', etc.), explicá que los únicos estados son PENDIENTE y COMPLETADO, y preguntá cuál quiere aplicar.\n" +
+        "NUNCA asignes nota=0 a menos que el usuario haya dicho explícitamente que la nota es 0. Si el usuario solo pide cambiar el estado, no toques la nota.\n\n" +
+
         "LO QUE NO EXISTE (nunca lo menciones):\n" +
         "- No hay sección de notas separada, reportes, estadísticas avanzadas, notificaciones, alertas por email, perfil editable, tareas, trabajos ni asistencia.\n\n" +
 
@@ -186,8 +193,9 @@ public class ChatbotService {
                 String fecha = args.has("fecha") ? args.path("fecha").asText() : existente.getFecha().toString();
                 double porcentaje = args.has("porcentaje") ? args.path("porcentaje").asDouble() : existente.getPorcentaje();
                 String estado = args.has("estado") ? args.path("estado").asText() : existente.getEstado();
-                Double nota = args.has("nota") && !args.path("nota").isNull() ? args.path("nota").asDouble() : existente.getNota();
-                if (args.has("nota") && !args.path("nota").isNull()) estado = "COMPLETADO";
+                boolean notaExplicita = args.has("nota") && !args.path("nota").isNull();
+                Double nota = notaExplicita ? args.path("nota").asDouble() : existente.getNota();
+                if (notaExplicita && !args.has("estado")) estado = "COMPLETADO";
                 examenService.editarDatosExamen(id, nombre, LocalDate.parse(fecha), porcentaje, nota, estado);
                 yield "Examen '" + nombre + "' actualizado correctamente.";
             }
