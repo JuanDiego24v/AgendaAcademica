@@ -6,7 +6,7 @@ interface ChatMessage { text: string; sender: 'bot' | 'user'; }
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { text: '¡Hola! Soy tu asistente IA. Podés preguntarme sobre la app o subir un PDF de sílabo para importar el curso y sus exámenes automáticamente.', sender: 'bot' },
+    { text: '¡Hola! Soy tu asistente IA. Puedes preguntarme sobre la app o subir un PDF de sílabo para importar el curso y sus exámenes automáticamente.', sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
   const [uploading, setUploading] = useState(false);

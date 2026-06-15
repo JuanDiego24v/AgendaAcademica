@@ -15,9 +15,13 @@ import proyecto.personal.service.PeriodoService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class PdfExtractorService {
+
+    private static final Logger log = LoggerFactory.getLogger(PdfExtractorService.class);
 
     private final GroqClient groqClient;
     private final ExamenService examenService;
@@ -67,9 +71,14 @@ public class PdfExtractorService {
         java.util.Optional<proyecto.personal.model.Periodo> periodoOpt = periodoService.obtenerActivo();
         LocalDate fechaInicioPeriodo = periodoOpt.map(p -> p.getFechaInicio()).orElse(null);
 
+        log.info("[PDF] Texto extraído ({} chars): {}", textoPdf.length(), textoPdf.substring(0, Math.min(500, textoPdf.length())));
+        log.info("[PDF] fechaInicioPeriodo={}", fechaInicioPeriodo);
+
         String prompt = "Extrae el nombre del curso y los exámenes del siguiente sílabo:\n\n" + textoPdf;
         String respuesta = groqClient.callGroqApi(SYSTEM_PROMPT_SILABO, prompt);
         respuesta = respuesta.replaceAll("```json", "").replaceAll("```", "").trim();
+
+        log.info("[PDF] Respuesta Groq: {}", respuesta);
 
         JsonNode root = objectMapper.readTree(respuesta);
 

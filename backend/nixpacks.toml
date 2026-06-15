@@ -1,5 +1,8 @@
+[phases.setup]
+aptPkgs = ["fontconfig", "fonts-liberation"]
+
 [phases.build]
 cmds = ["./mvnw clean package -DskipTests"]
 
 [start]
-cmd = "java -jar target/personal-0.0.1-SNAPSHOT.jar"
+cmd = "java -Djava.awt.headless=true -jar target/personal-0.0.1-SNAPSHOT.jar"
