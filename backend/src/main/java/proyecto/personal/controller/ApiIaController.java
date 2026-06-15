@@ -1,5 +1,7 @@
 package proyecto.personal.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +20,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/ia")
 public class ApiIaController {
+
+    private static final Logger log = LoggerFactory.getLogger(ApiIaController.class);
 
     private final ChatbotService chatbotService;
     private final PdfExtractorService pdfExtractorService;
@@ -51,8 +55,9 @@ public class ApiIaController {
             }
             return ResponseEntity.ok(Map.of("message", msg, "updated", true));
         } catch (Exception e) {
+            log.error("[PDF] Error al procesar sílabo: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("message", "Error al procesar el sílabo: " + e.getMessage(), "updated", false));
+                    .body(Map.of("message", "No se pudo procesar el sílabo. Intenta de nuevo en un momento.", "updated", false));
         }
     }
 
