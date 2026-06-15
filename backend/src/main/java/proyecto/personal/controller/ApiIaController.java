@@ -34,7 +34,7 @@ public class ApiIaController {
 
     @PostMapping("/chatbot/ask")
     public Map<String, Object> preguntar(@RequestBody ChatRequest req) {
-        List<Examen> examenes = examenService.listarExamenesDelUsuarioActual();
+        List<Examen> examenes = examenService.listarExamenesDelPeriodoActual();
         List<Curso> cursos = cursoService.listarCursosDelUsuarioActual();
         List<ChatMessageDto> historial = req.historial() != null ? req.historial() : List.of();
         ChatbotService.ChatbotResponse response = chatbotService.responderDuda(req.mensaje(), historial, examenes, cursos);

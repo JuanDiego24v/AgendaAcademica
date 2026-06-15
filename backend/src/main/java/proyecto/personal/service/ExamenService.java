@@ -257,7 +257,7 @@ public class ExamenService {
 
     public List<EventoDTO> obtenerEventos() {
 
-        return listarExamenesDelUsuarioActual().stream()
+        return listarExamenesDelPeriodoActual().stream()
                 .map(ex -> new EventoDTO(
                         ex.getNombre(),
                         ex.getFecha().toString(),

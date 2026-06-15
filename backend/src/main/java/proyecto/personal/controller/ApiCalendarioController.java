@@ -20,7 +20,7 @@ public class ApiCalendarioController {
 
     @GetMapping
     public List<ExamenDto> todos() {
-        return examenService.listarExamenesDelUsuarioActual().stream()
+        return examenService.listarExamenesDelPeriodoActual().stream()
                 .filter(e -> !e.getFecha().isBefore(LocalDate.now()))
                 .sorted(Comparator.comparing(e -> e.getFecha()))
                 .map(ExamenDto::from)
