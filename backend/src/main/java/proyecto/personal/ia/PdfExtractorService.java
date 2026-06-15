@@ -46,10 +46,10 @@ public class PdfExtractorService {
         "El formato EXACTO debe ser: " +
         "{ \"curso\": { \"nombre\": \"Nombre del curso\" }, " +
         "\"examenes\": [{ \"nombre\": \"...\", \"fecha\": \"YYYY-MM-DD\", \"semana\": null, \"porcentaje\": 20.0 }] } " +
-        "REGLAS PARA FECHAS: " +
-        "- Si el sílabo tiene una fecha exacta (ej: '15/03/2026', '15 de marzo de 2026'), ponla en 'fecha' como YYYY-MM-DD y deja 'semana' en null. " +
-        "- Si el sílabo indica semana (ej: 'Semana 8', 'Week 8'), pon el número entero en 'semana' y deja 'fecha' en null. NO calcules la fecha tú mismo. " +
-        "- Si no hay ni fecha ni semana, ambos campos van en null. " +
+        "REGLAS PARA FECHAS (MUY IMPORTANTE — NO INVENTES NI INFERIR): " +
+        "- Si el sílabo tiene una fecha exacta ESCRITA EXPLÍCITAMENTE (ej: '15/03/2026', '15 de marzo de 2026'), ponla en 'fecha' como YYYY-MM-DD y deja 'semana' en null. " +
+        "- Si el sílabo indica explícitamente el número de semana junto al examen (ej: 'Semana 8', 'Week 8', 'Sem. 12'), pon ese número entero en 'semana' y deja 'fecha' en null. " +
+        "- Si NO encuentras una fecha o semana EXPLÍCITAMENTE asociada a ese examen en el texto, pon AMBOS campos en null. NUNCA inventes, estimes ni calcules semanas o fechas. " +
         "REGLAS PARA PORCENTAJES: " +
         "- Extrae los porcentajes exactos del documento. " +
         "- Si no están especificados, distribúyelos uniformemente entre los exámenes (suma total = 100).";
