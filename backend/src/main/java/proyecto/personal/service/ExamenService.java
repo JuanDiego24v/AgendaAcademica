@@ -20,15 +20,18 @@ public class ExamenService {
     private final ExamenRepository examenRepository;
     private final CursoService cursoService;
     private final UsuarioRepository usuarioRepository;
+    private final PeriodoService periodoService;
 
     public ExamenService(
             ExamenRepository examenRepository,
             CursoService cursoService,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            PeriodoService periodoService) {
 
         this.examenRepository = examenRepository;
         this.cursoService = cursoService;
         this.usuarioRepository = usuarioRepository;
+        this.periodoService = periodoService;
     }
 
     // USUARIO ACTUAL
@@ -135,6 +138,13 @@ public class ExamenService {
 
         Usuario usuario = obtenerUsuarioActual();
         return examenRepository.findByCursoPeriodoUsuarioId(usuario.getId());
+    }
+
+    public List<Examen> listarExamenesDelPeriodoActual() {
+
+        return periodoService.obtenerActivo()
+                .map(p -> examenRepository.findByCursoPeriodoId(p.getId()))
+                .orElse(List.of());
     }
 
     public List<Examen> listarPorCurso(Long cursoId) {

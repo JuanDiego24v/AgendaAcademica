@@ -20,7 +20,7 @@ public class ApiHomeController {
 
     @GetMapping("/proximos")
     public List<ExamenDto> proximosExamenes() {
-        return examenService.listarExamenesDelUsuarioActual().stream()
+        return examenService.listarExamenesDelPeriodoActual().stream()
                 .filter(e -> !e.getFecha().isBefore(LocalDate.now()))
                 .sorted(Comparator.comparing(e -> e.getFecha()))
                 .map(ExamenDto::from)

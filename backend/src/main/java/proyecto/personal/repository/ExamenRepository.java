@@ -16,4 +16,6 @@ public interface ExamenRepository extends JpaRepository<Examen, Long> {
     Optional<Examen> findByIdAndCursoPeriodoUsuarioId(Long id, Long usuarioId);
 
     List<Examen> findByFechaBetweenOrderByFechaAsc(LocalDate inicio, LocalDate fin);
+
+    List<Examen> findByCursoPeriodoId(Long periodoId);
 }

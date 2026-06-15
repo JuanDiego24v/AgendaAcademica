@@ -42,7 +42,7 @@ public class ApiPerfilController {
                 .map(p -> (long) cursoService.listarCursosDelUsuarioActual().size())
                 .orElse(0L);
 
-        long totalExamenes = (long) examenService.listarExamenesDelUsuarioActual().size();
+        long totalExamenes = (long) examenService.listarExamenesDelPeriodoActual().size();
 
         PeriodoDto periodoDto = periodoActivo.map(PeriodoDto::from).orElse(null);
 
