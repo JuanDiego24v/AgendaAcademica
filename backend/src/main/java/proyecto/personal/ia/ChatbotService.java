@@ -9,7 +9,10 @@ import proyecto.personal.model.Examen;
 import proyecto.personal.service.CursoService;
 import proyecto.personal.service.ExamenService;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +66,12 @@ public class ChatbotService {
         "Solo ejecuta la acción si el mensaje actual del usuario confirma explícitamente (dice 'sí', 'confirmo', 'adelante', etc.) Y tu mensaje anterior en el historial fue una pregunta de confirmación para esa acción específica.\n" +
         "Si hay ambigüedad (varios exámenes o cursos con nombres similares), listalos con su curso y pide al usuario que especifique cuál.\n\n" +
 
-        "Si el usuario pregunta algo ajeno a esta app, niégate educadamente.";
+        "Si el usuario pregunta algo ajeno a esta app, niégate educadamente.\n\n" +
+
+        "CÁLCULO DE FECHAS POR DÍA DE SEMANA (MUY IMPORTANTE):\n" +
+        "Cuando el usuario pida mover exámenes a un día de la semana (ej: 'pasalos al martes más próximo', 'cambialos al lunes'), " +
+        "NUNCA calcules las fechas tú mismo — los LLMs cometen errores de aritmética. " +
+        "SIEMPRE llama primero a `calcular_fecha_dia_semana` para cada fecha, obtén el resultado, y recién entonces llama a `editar_examen` con la fecha correcta.";
 
     public ChatbotService(GroqClient groqClient, ExamenService examenService, CursoService cursoService) {
         this.groqClient = groqClient;
@@ -174,6 +182,28 @@ public class ChatbotService {
                 cursoService.eliminar(id);
                 yield "Curso '" + curso.getNombre() + "' eliminado.";
             }
+            case "calcular_fecha_dia_semana" -> {
+                String fechaStr = args.path("fecha").asText();
+                String diaSemana = args.path("dia_semana").asText().toUpperCase()
+                        .replace("É", "E").replace("Á", "A");
+                LocalDate fecha = LocalDate.parse(fechaStr);
+                DayOfWeek target = switch (diaSemana) {
+                    case "LUNES"     -> DayOfWeek.MONDAY;
+                    case "MARTES"    -> DayOfWeek.TUESDAY;
+                    case "MIERCOLES" -> DayOfWeek.WEDNESDAY;
+                    case "JUEVES"    -> DayOfWeek.THURSDAY;
+                    case "VIERNES"   -> DayOfWeek.FRIDAY;
+                    case "SABADO"    -> DayOfWeek.SATURDAY;
+                    case "DOMINGO"   -> DayOfWeek.SUNDAY;
+                    default -> throw new IllegalArgumentException("Día no reconocido: " + diaSemana);
+                };
+                LocalDate next = fecha.with(TemporalAdjusters.nextOrSame(target));
+                LocalDate prev = fecha.with(TemporalAdjusters.previousOrSame(target));
+                long dNext = ChronoUnit.DAYS.between(fecha, next);
+                long dPrev = ChronoUnit.DAYS.between(prev, fecha);
+                LocalDate result = dNext <= dPrev ? next : prev;
+                yield "El " + diaSemana.toLowerCase() + " más próximo a " + fechaStr + " es: " + result;
+            }
             default -> throw new IllegalArgumentException("Función desconocida: " + toolName);
         };
     }
@@ -244,6 +274,15 @@ public class ChatbotService {
             tool("eliminar_curso", "Elimina un curso y todos sus exámenes.",
                 Map.of("curso_id", prop("integer", "ID del curso a eliminar")),
                 List.of("curso_id")
+            ),
+            tool("calcular_fecha_dia_semana",
+                "Calcula el día de la semana más próximo (antes o después) a una fecha dada. " +
+                "Úsala SIEMPRE antes de editar un examen cuando el usuario pida mover fechas a un día de la semana específico.",
+                Map.of(
+                    "fecha", prop("string", "Fecha base en formato YYYY-MM-DD"),
+                    "dia_semana", prop("string", "Día en español en mayúsculas: LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, SABADO, DOMINGO")
+                ),
+                List.of("fecha", "dia_semana")
             )
         );
     }
