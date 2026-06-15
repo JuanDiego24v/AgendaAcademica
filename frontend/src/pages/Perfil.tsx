@@ -23,10 +23,18 @@ export default function Perfil() {
   const [periodoError, setPeriodoError] = useState('');
   const [periodoSuccess, setPeriodoSuccess] = useState('');
 
+  const [showPwModal, setShowPwModal] = useState(false);
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
+
+  const closePwModal = () => {
+    setShowPwModal(false);
+    setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setPwError('');
+    setPwSuccess('');
+  };
 
   useEffect(() => {
     client.get<PerfilData>('/api/perfil').then(r => setPerfil(r.data)).catch(() => {});
@@ -187,31 +195,78 @@ export default function Perfil() {
       <div className="section-title">Seguridad</div>
       <div style={{
         background: 'var(--black-card)', border: '1px solid var(--border)',
-        borderRadius: 4, padding: '28px 32px', maxWidth: 480, marginBottom: 40,
+        borderRadius: 4, padding: '24px 28px', marginBottom: 40,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
       }}>
-        {pwError && <div className="alert-dark-danger mb-3">{pwError}</div>}
-        {pwSuccess && <div className="alert-dark-success mb-3">{pwSuccess}</div>}
-        <form onSubmit={handlePwSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Contraseña actual</label>
-            <input type="password" className="form-control"
-              value={pwForm.currentPassword} onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))} required />
+        <div>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: 'var(--white)', letterSpacing: 1 }}>
+            Contraseña
           </div>
-          <div className="mb-3">
-            <label className="form-label">Nueva contraseña</label>
-            <input type="password" className="form-control"
-              value={pwForm.newPassword} onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))} required />
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: 'var(--muted)', letterSpacing: 1, marginTop: 4 }}>
+            ••••••••••••
           </div>
-          <div className="mb-4">
-            <label className="form-label">Confirmar nueva contraseña</label>
-            <input type="password" className="form-control"
-              value={pwForm.confirmPassword} onChange={e => setPwForm(f => ({ ...f, confirmPassword: e.target.value }))} required />
-          </div>
-          <button type="submit" className="btn-submit" disabled={pwLoading}>
-            {pwLoading ? 'Guardando...' : 'Cambiar contraseña'}
-          </button>
-        </form>
+        </div>
+        <button className="btn-outline-action" onClick={() => setShowPwModal(true)}>
+          Cambiar contraseña
+        </button>
       </div>
+
+      {/* ── MODAL CAMBIAR CONTRASEÑA ── */}
+      {showPwModal && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 2000, padding: '24px 16px',
+        }} onClick={closePwModal}>
+          <div style={{
+            background: 'var(--black-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 4,
+            width: '100%', maxWidth: 440,
+            position: 'relative',
+            overflow: 'hidden',
+            animation: 'fadeUp 0.3s ease both',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+              background: 'linear-gradient(90deg, var(--orange), transparent)',
+            }} />
+            <div style={{ padding: '32px 32px 28px' }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: 'var(--white)', letterSpacing: 1, marginBottom: 24 }}>
+                Cambiar contraseña
+              </div>
+              {pwError && <div className="alert-dark-danger mb-3">{pwError}</div>}
+              {pwSuccess && <div className="alert-dark-success mb-3">{pwSuccess}</div>}
+              <form onSubmit={handlePwSubmit}>
+                <div className="mb-3">
+                  <label className="form-label">Contraseña actual</label>
+                  <input type="password" className="form-control" autoFocus
+                    value={pwForm.currentPassword} onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))} required />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Nueva contraseña</label>
+                  <input type="password" className="form-control"
+                    value={pwForm.newPassword} onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))} required />
+                </div>
+                <div className="mb-4">
+                  <label className="form-label">Confirmar nueva contraseña</label>
+                  <input type="password" className="form-control"
+                    value={pwForm.confirmPassword} onChange={e => setPwForm(f => ({ ...f, confirmPassword: e.target.value }))} required />
+                </div>
+                <div className="d-flex gap-3">
+                  <button type="submit" className="btn-submit" disabled={pwLoading}>
+                    {pwLoading ? 'Guardando...' : 'Cambiar contraseña'}
+                  </button>
+                  <button type="button" className="btn-outline-action" onClick={closePwModal}>
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
