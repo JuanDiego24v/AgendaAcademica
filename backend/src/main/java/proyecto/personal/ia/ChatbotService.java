@@ -95,16 +95,19 @@ public class ChatbotService {
         messages.add(Map.of("role", "user", "content", mensaje));
 
         try {
-            GroqClient.GroqResponse response = groqClient.callWithTools(messages, buildTools());
+            List<Map<String, Object>> tools = buildTools();
+            GroqClient.GroqResponse response = groqClient.callWithTools(messages, tools);
+            boolean updated = false;
+            int iterations = 0;
 
-            if (response.isToolCall()) {
+            while (response.isToolCall() && iterations < 20) {
+                iterations++;
                 JsonNode args = objectMapper.readTree(response.toolArguments());
                 String toolResult;
-                boolean success = false;
 
                 try {
                     toolResult = ejecutarTool(response.toolName(), args);
-                    success = true;
+                    if (isDataModifyingTool(response.toolName())) updated = true;
                 } catch (Exception e) {
                     toolResult = "Error: " + e.getMessage();
                 }
@@ -118,11 +121,16 @@ public class ChatbotService {
                 )));
                 messages.add(assistantMsg);
 
-                String finalText = groqClient.sendToolResult(messages, response.toolCallId(), toolResult);
-                return new ChatbotResponse(finalText, success);
+                Map<String, Object> toolMsg = new HashMap<>();
+                toolMsg.put("role", "tool");
+                toolMsg.put("tool_call_id", response.toolCallId());
+                toolMsg.put("content", toolResult);
+                messages.add(toolMsg);
+
+                response = groqClient.callWithTools(messages, tools);
             }
 
-            return new ChatbotResponse(response.text(), false);
+            return new ChatbotResponse(response.text(), updated);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,6 +213,14 @@ public class ChatbotService {
                 yield "El " + diaSemana.toLowerCase() + " más próximo a " + fechaStr + " es: " + result;
             }
             default -> throw new IllegalArgumentException("Función desconocida: " + toolName);
+        };
+    }
+
+    private boolean isDataModifyingTool(String toolName) {
+        return switch (toolName) {
+            case "crear_examen", "editar_examen", "eliminar_examen",
+                 "crear_curso", "editar_curso", "eliminar_curso" -> true;
+            default -> false;
         };
     }
 
