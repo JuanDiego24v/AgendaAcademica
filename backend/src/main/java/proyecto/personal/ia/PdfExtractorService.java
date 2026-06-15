@@ -47,9 +47,9 @@ public class PdfExtractorService {
         "{ \"curso\": { \"nombre\": \"Nombre del curso\" }, " +
         "\"examenes\": [{ \"nombre\": \"...\", \"fecha\": \"YYYY-MM-DD\", \"semana\": null, \"porcentaje\": 20.0 }] } " +
         "REGLAS PARA FECHAS (MUY IMPORTANTE — NO INVENTES NI INFERIR): " +
-        "- Si el sílabo tiene una fecha exacta ESCRITA EXPLÍCITAMENTE (ej: '15/03/2026', '15 de marzo de 2026'), ponla en 'fecha' como YYYY-MM-DD y deja 'semana' en null. " +
-        "- Si el sílabo indica explícitamente el número de semana junto al examen (ej: 'Semana 8', 'Week 8', 'Sem. 12'), pon ese número entero en 'semana' y deja 'fecha' en null. " +
-        "- Si NO encuentras una fecha o semana EXPLÍCITAMENTE asociada a ese examen en el texto, pon AMBOS campos en null. NUNCA inventes, estimes ni calcules semanas o fechas. " +
+        "- Si el sílabo tiene una fecha exacta ESCRITA EXPLÍCITAMENTE junto al examen (ej: '15/03/2026', '15 de marzo de 2026'), ponla en 'fecha' como YYYY-MM-DD y deja 'semana' en null. " +
+        "- Los sílabos latinoamericanos suelen tener un CRONOGRAMA en forma de tabla con columnas 'Semana' y 'Evaluación' (u otras). Si el examen aparece en una fila de esa tabla y la misma fila tiene un número de semana, usa ese número en 'semana' y deja 'fecha' en null. " +
+        "- Si NO encuentras una fecha o semana CLARAMENTE asociada a ese examen (ya sea en texto directo o en la misma fila de una tabla), pon AMBOS campos en null. NUNCA inventes, estimes ni calcules semanas o fechas que no estén en el documento. " +
         "REGLAS PARA PORCENTAJES: " +
         "- Extrae los porcentajes exactos del documento. " +
         "- Si no están especificados, distribúyelos uniformemente entre los exámenes (suma total = 100).";
@@ -156,6 +156,7 @@ public class PdfExtractorService {
     private String extraerTextoPdf(MultipartFile file) throws Exception {
         try (org.apache.pdfbox.pdmodel.PDDocument document = org.apache.pdfbox.Loader.loadPDF(file.getBytes())) {
             PDFTextStripper pdfStripper = new PDFTextStripper();
+            pdfStripper.setSortByPosition(true);
             return pdfStripper.getText(document);
         }
     }
