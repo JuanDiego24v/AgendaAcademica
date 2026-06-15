@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,8 +32,10 @@ public class GroqClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public record GroqResponse(String text, String toolName, String toolArguments, String toolCallId) {
-        public boolean isToolCall() { return toolName != null; }
+    public record ToolCall(String toolName, String toolArguments, String toolCallId) {}
+
+    public record GroqResponse(String text, List<ToolCall> toolCalls) {
+        public boolean isToolCall() { return toolCalls != null && !toolCalls.isEmpty(); }
     }
 
     public String callGroqApi(String systemPrompt, String userMessage) {
@@ -49,10 +52,6 @@ public class GroqClient {
         }
     }
 
-    public GroqResponse callWithTools(List<Map<String, Object>> messages, List<Map<String, Object>> tools) throws Exception {
-        return execute(messages, tools);
-    }
-
     public String sendToolResult(List<Map<String, Object>> messages, String toolCallId, String result) throws Exception {
         List<Map<String, Object>> updated = new ArrayList<>(messages);
         Map<String, Object> toolMsg = new HashMap<>();
@@ -62,6 +61,10 @@ public class GroqClient {
         updated.add(toolMsg);
         GroqResponse response = execute(updated, null);
         return response.text() != null ? response.text() : "";
+    }
+
+    public GroqResponse callWithTools(List<Map<String, Object>> messages, List<Map<String, Object>> tools) throws Exception {
+        return execute(messages, tools);
     }
 
     private GroqResponse execute(List<Map<String, Object>> messages, List<Map<String, Object>> tools) throws Exception {
@@ -80,23 +83,41 @@ public class GroqClient {
         }
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
 
-        JsonNode root = objectMapper.readTree(response.getBody());
-        JsonNode choice = root.path("choices").get(0);
-        JsonNode message = choice.path("message");
-        String finishReason = choice.path("finish_reason").asText();
+        Exception lastException = null;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) Thread.sleep(3000L * attempt);
+            try {
+                ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
 
-        if ("tool_calls".equals(finishReason)) {
-            JsonNode toolCall = message.path("tool_calls").get(0);
-            return new GroqResponse(
-                null,
-                toolCall.path("function").path("name").asText(),
-                toolCall.path("function").path("arguments").asText(),
-                toolCall.path("id").asText()
-            );
+                JsonNode root = objectMapper.readTree(response.getBody());
+                JsonNode choice = root.path("choices").get(0);
+                JsonNode message = choice.path("message");
+                String finishReason = choice.path("finish_reason").asText();
+
+                if ("tool_calls".equals(finishReason)) {
+                    JsonNode toolCallsNode = message.path("tool_calls");
+                    List<ToolCall> calls = new ArrayList<>();
+                    for (JsonNode tc : toolCallsNode) {
+                        calls.add(new ToolCall(
+                            tc.path("function").path("name").asText(),
+                            tc.path("function").path("arguments").asText(),
+                            tc.path("id").asText()
+                        ));
+                    }
+                    return new GroqResponse(null, calls);
+                }
+
+                return new GroqResponse(message.path("content").asText(), null);
+
+            } catch (HttpClientErrorException e) {
+                if (e.getStatusCode().value() == 429) {
+                    lastException = e;
+                } else {
+                    throw e;
+                }
+            }
         }
-
-        return new GroqResponse(message.path("content").asText(), null, null, null);
+        throw lastException;
     }
 }

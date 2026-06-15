@@ -108,30 +108,38 @@ public class ChatbotService {
 
             while (response.isToolCall() && iterations < 20) {
                 iterations++;
-                JsonNode args = objectMapper.readTree(response.toolArguments());
-                String toolResult;
 
-                try {
-                    toolResult = ejecutarTool(response.toolName(), args);
-                    if (isDataModifyingTool(response.toolName())) updated = true;
-                } catch (Exception e) {
-                    toolResult = "Error: " + e.getMessage();
+                List<Map<String, Object>> toolCallsList = new ArrayList<>();
+                List<Map<String, Object>> toolResultMsgs = new ArrayList<>();
+
+                for (GroqClient.ToolCall tc : response.toolCalls()) {
+                    JsonNode args = objectMapper.readTree(tc.toolArguments());
+                    String toolResult;
+                    try {
+                        toolResult = ejecutarTool(tc.toolName(), args);
+                        if (isDataModifyingTool(tc.toolName())) updated = true;
+                    } catch (Exception e) {
+                        toolResult = "Error: " + e.getMessage();
+                    }
+
+                    toolCallsList.add(Map.of(
+                        "id", tc.toolCallId(),
+                        "type", "function",
+                        "function", Map.of("name", tc.toolName(), "arguments", tc.toolArguments())
+                    ));
+
+                    Map<String, Object> toolMsg = new HashMap<>();
+                    toolMsg.put("role", "tool");
+                    toolMsg.put("tool_call_id", tc.toolCallId());
+                    toolMsg.put("content", toolResult);
+                    toolResultMsgs.add(toolMsg);
                 }
 
                 Map<String, Object> assistantMsg = new HashMap<>();
                 assistantMsg.put("role", "assistant");
-                assistantMsg.put("tool_calls", List.of(Map.of(
-                    "id", response.toolCallId(),
-                    "type", "function",
-                    "function", Map.of("name", response.toolName(), "arguments", response.toolArguments())
-                )));
+                assistantMsg.put("tool_calls", toolCallsList);
                 messages.add(assistantMsg);
-
-                Map<String, Object> toolMsg = new HashMap<>();
-                toolMsg.put("role", "tool");
-                toolMsg.put("tool_call_id", response.toolCallId());
-                toolMsg.put("content", toolResult);
-                messages.add(toolMsg);
+                messages.addAll(toolResultMsgs);
 
                 response = groqClient.callWithTools(messages, tools);
             }
