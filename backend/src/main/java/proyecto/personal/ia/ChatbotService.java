@@ -49,10 +49,11 @@ public class ChatbotService {
         "IMPORTANTE al editar exámenes: si el usuario solo pide cambiar un campo (ej: la nota), usa los valores existentes del examen para los demás campos.\n\n" +
 
         "ESTADOS DE EXÁMENES:\n" +
-        "Solo existen dos estados posibles:\n" +
-        "- PENDIENTE: el examen todavía no fue rendido o no tiene nota registrada.\n" +
-        "- COMPLETADO: el examen fue rendido y tiene una nota asignada. Se muestra como 'Revisado' en la app.\n" +
-        "Si el usuario pide un estado que no existe (ej: 'falta revisar', 'por revisar', 'revisado sin nota', etc.), explicá que los únicos estados son PENDIENTE y COMPLETADO, y preguntá cuál quiere aplicar.\n" +
+        "Solo existen dos estados posibles. El usuario los ve con estos nombres en la app:\n" +
+        "- 'Falta revisar' → internamente es PENDIENTE. El examen todavía no fue rendido o no tiene nota registrada.\n" +
+        "- 'Examen revisado' → internamente es COMPLETADO. El examen fue rendido y tiene una nota asignada.\n" +
+        "Cuando el usuario diga 'ponle falta revisar', 'marcalo como falta revisar' o similar → usá estado=PENDIENTE.\n" +
+        "Cuando el usuario diga 'ponle examen revisado', 'marcalo como revisado' o similar → usá estado=COMPLETADO.\n" +
         "NUNCA asignes nota=0 a menos que el usuario haya dicho explícitamente que la nota es 0. Si el usuario solo pide cambiar el estado, no toques la nota.\n\n" +
 
         "LO QUE NO EXISTE (nunca lo menciones):\n" +
