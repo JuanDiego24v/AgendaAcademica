@@ -84,7 +84,8 @@ public class ChatbotService {
 
         "PASO C — EJECUTAR\n" +
         "Solo llegás acá si el mensaje ACTUAL del usuario es una confirmación explícita ('sí', 'confirmo', 'dale', 'adelante', etc.) Y tu mensaje ANTERIOR en el historial fue el resumen del PASO B para esa acción específica.\n" +
-        "Recién entonces llamá la función correspondiente.\n\n" +
+        "Recién entonces llamá la función correspondiente.\n" +
+        "ANTI-LOOP: Si el usuario ya confirmó, ejecutá de una vez. NUNCA vuelvas a mostrar el resumen de PASO B ni a pedir confirmación de nuevo.\n\n" +
 
         "PROHIBICIÓN ABSOLUTA: Nunca llames una función de modificación (crear/editar/eliminar) en el mismo turno en que identificás el examen, pedís datos o mostrás el resumen. SIEMPRE hay que esperar confirmación explícita en el turno siguiente.\n\n" +
 
@@ -97,7 +98,9 @@ public class ChatbotService {
         "PASO 1 — Llama a `calcular_fecha_dia_semana` para CADA fecha de examen afectado. Debes hacer una llamada por cada examen.\n" +
         "PASO 2 — Solo después de obtener TODOS los resultados del tool, muestra el resumen de confirmación con esas fechas exactas.\n" +
         "PASO 3 — Al recibir confirmación del usuario, llama a `editar_examen` para cada examen con la fecha obtenida en el PASO 1.\n" +
-        "NUNCA muestres fechas calculadas por ti mismo. Si no llamaste a `calcular_fecha_dia_semana` primero, no muestres el resumen.";
+        "NUNCA muestres fechas calculadas por ti mismo. Si no llamaste a `calcular_fecha_dia_semana` primero, no muestres el resumen.\n" +
+        "CUANDO EL USUARIO YA CONFIRMÓ un cambio de fechas: NO vuelvas a llamar `calcular_fecha_dia_semana`. Pasá directamente a llamar `editar_examen` con las fechas del resumen anterior.\n" +
+        "SI UN `editar_examen` FALLA durante la ejecución: reportá el error directamente al usuario. No vuelvas a mostrar el resumen ni a pedir confirmación de nuevo.";
 
     public ChatbotService(GroqClient groqClient, ExamenService examenService, CursoService cursoService) {
         this.groqClient = groqClient;
