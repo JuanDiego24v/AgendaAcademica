@@ -74,13 +74,22 @@ public class PdfExtractorService {
         log.info("[PDF] Texto extraído ({} chars): {}", textoPdf.length(), textoPdf.substring(0, Math.min(500, textoPdf.length())));
         log.info("[PDF] fechaInicioPeriodo={}", fechaInicioPeriodo);
 
-        String prompt = "Extrae el nombre del curso y los exámenes del siguiente sílabo:\n\n" + textoPdf;
+        String textoPdfTruncado = textoPdf.length() > 6000 ? textoPdf.substring(0, 6000) : textoPdf;
+        String prompt = "Extrae el nombre del curso y los exámenes del siguiente sílabo:\n\n" + textoPdfTruncado;
         String respuesta = groqClient.callGroqApi(SYSTEM_PROMPT_SILABO, prompt);
         respuesta = respuesta.replaceAll("```json", "").replaceAll("```", "").trim();
 
         log.info("[PDF] Respuesta Groq: {}", respuesta);
 
-        JsonNode root = objectMapper.readTree(respuesta);
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(respuesta);
+        } catch (Exception parseEx) {
+            log.warn("[PDF] JSON inválido de Groq, reintentando: {}", parseEx.getMessage());
+            respuesta = groqClient.callGroqApi(SYSTEM_PROMPT_SILABO, prompt);
+            respuesta = respuesta.replaceAll("```json", "").replaceAll("```", "").trim();
+            root = objectMapper.readTree(respuesta);
+        }
 
         String nombreCurso = root.path("curso").path("nombre").asText("Curso importado");
         Curso curso = new Curso();
