@@ -92,15 +92,11 @@ public class ChatbotService {
         "Si el usuario pregunta algo ajeno a esta app, niégate educadamente.\n\n" +
 
         "CÁLCULO DE FECHAS POR DÍA DE SEMANA — REGLA CRÍTICA:\n" +
-        "Cuando el usuario pida mover exámenes a un día de la semana (ej: 'pasalos al martes', 'cambialos al lunes más próximo'), " +
-        "ESTÁ PROHIBIDO calcular o estimar fechas tú mismo. Los LLMs cometen errores graves de aritmética de fechas.\n" +
-        "FLUJO OBLIGATORIO paso a paso:\n" +
-        "PASO 1 — Llama a `calcular_fecha_dia_semana` para CADA fecha de examen afectado. Debes hacer una llamada por cada examen.\n" +
-        "PASO 2 — Solo después de obtener TODOS los resultados del tool, muestra el resumen de confirmación con esas fechas exactas.\n" +
-        "PASO 3 — Al recibir confirmación del usuario, llama a `editar_examen` para cada examen con la fecha obtenida en el PASO 1.\n" +
-        "NUNCA muestres fechas calculadas por ti mismo. Si no llamaste a `calcular_fecha_dia_semana` primero, no muestres el resumen.\n" +
-        "CUANDO EL USUARIO YA CONFIRMÓ un cambio de fechas: NO vuelvas a llamar `calcular_fecha_dia_semana`. Pasá directamente a llamar `editar_examen` con las fechas del resumen anterior.\n" +
-        "SI UN `editar_examen` FALLA durante la ejecución: reportá el error directamente al usuario. No vuelvas a mostrar el resumen ni a pedir confirmación de nuevo.";
+        "Cuando el usuario pida mover exámenes a un día de la semana (ej: 'pasalos al martes', 'cambialos al lunes más próximo'):\n" +
+        "PASO 1 — Llamá a `calcular_fecha_dia_semana` para CADA examen afectado (una llamada por examen). JAMÁS calcules fechas de cabeza: los LLMs cometen errores graves de aritmética de fechas.\n" +
+        "PASO 2 — Con los resultados del tool, mostrá el resumen en formato 'NOMBRE: FECHA_ORIGINAL → FECHA_NUEVA' y pedí confirmación.\n" +
+        "PASO 3 — Cuando el usuario confirme: buscá en tu mensaje ANTERIOR del historial los valores FECHA_NUEVA (los que están después de '→'). Usá esas fechas EXACTAS para llamar `editar_examen`. PROHIBIDO volver a llamar `calcular_fecha_dia_semana`. PROHIBIDO hacer cualquier aritmética de fechas. Las fechas ya están calculadas en el resumen.\n" +
+        "SI UN `editar_examen` FALLA: reportá el error directamente. No repitas el resumen ni pidas confirmación de nuevo.";
 
     public ChatbotService(GroqClient groqClient, ExamenService examenService, CursoService cursoService) {
         this.groqClient = groqClient;
