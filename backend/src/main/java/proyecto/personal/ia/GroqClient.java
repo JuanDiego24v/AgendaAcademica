@@ -112,11 +112,18 @@ public class GroqClient {
 
             } catch (HttpClientErrorException e) {
                 if (e.getStatusCode().value() == 429) {
+                    System.err.println("Groq 429 (attempt " + attempt + "), retrying...");
                     lastException = e;
                 } else {
-                    System.err.println("Groq error " + e.getStatusCode() + ": " + e.getResponseBodyAsString());
+                    System.err.println("Groq 4xx error " + e.getStatusCode() + ": " + e.getResponseBodyAsString());
                     throw e;
                 }
+            } catch (org.springframework.web.client.HttpServerErrorException e) {
+                System.err.println("Groq 5xx error " + e.getStatusCode() + " (attempt " + attempt + "): " + e.getResponseBodyAsString());
+                lastException = e;
+            } catch (org.springframework.web.client.ResourceAccessException e) {
+                System.err.println("Groq connection error (attempt " + attempt + "): " + e.getMessage());
+                lastException = e;
             }
         }
         throw lastException;
