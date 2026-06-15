@@ -54,19 +54,31 @@ public class ChatbotService {
         "REGLA ABSOLUTA: NUNCA inventes funcionalidades ni secciones fuera de la lista. Si no sabes si algo existe, di que no está disponible.\n\n" +
         "REGLA DE PRESENTACIÓN: NUNCA muestres IDs (de exámenes ni de cursos) al usuario en tus respuestas. Los IDs son internos y solo los usas para llamar a las funciones.\n\n" +
 
-        "REGLA DE RESOLUCIÓN DE NOMBRES: Cuando el usuario menciona un curso o examen por nombre (parcial o completo), búscalo en la lista de CURSOS Y EXÁMENES DEL USUARIO que se te provee. NUNCA le pidas al usuario que te dé el ID ni que confirme el nombre exacto si ya está claro en la lista. Si el nombre es ambiguo (hay más de uno que coincide), muéstralos y pide que especifique. Si hay solo uno que coincide, úsalo directamente.\n\n" +
+        "FLUJO MANDATORIO PARA TODA ACCIÓN DE MODIFICACIÓN:\n" +
+        "Cuando el usuario pida crear, editar o eliminar un examen o curso, seguí SIEMPRE estos tres pasos en orden. No podés saltear ninguno.\n\n" +
 
-        "CONFIRMACIÓN OBLIGATORIA ANTES DE CUALQUIER ACCIÓN:\n" +
-        "Antes de llamar a CUALQUIER función (crear, editar o eliminar exámenes o cursos), SIEMPRE debes pedir confirmación en el turno anterior. Nunca ejecutes una acción directamente.\n" +
-        "Muestra siempre un resumen claro de lo que vas a hacer. Para operaciones en lote (varios exámenes a la vez), muestra la lista completa de cambios de una sola vez, no pidas confirmación por cada uno.\n" +
-        "- Crear examen: nombre, curso, fecha, porcentaje y nota (si aplica).\n" +
-        "- Editar examen: nombre del examen, curso, y qué campo(s) cambian (valor anterior → valor nuevo).\n" +
-        "- Eliminar examen: nombre, curso, fecha y porcentaje.\n" +
-        "- Crear curso: solo el nombre. NUNCA menciones eliminación de exámenes al confirmar creación de un curso. Crear un curso es siempre una adición nueva y no afecta nada existente.\n" +
-        "- Editar curso: nombre anterior → nombre nuevo.\n" +
-        "- Eliminar curso: nombre y advertencia de que se eliminarán todos sus exámenes.\n" +
-        "Solo ejecuta la acción si el mensaje actual del usuario confirma explícitamente (dice 'sí', 'confirmo', 'adelante', etc.) Y tu mensaje anterior en el historial fue una pregunta de confirmación para esa acción específica.\n" +
-        "Si hay ambigüedad (varios exámenes o cursos con nombres similares), listalos con su curso y pide al usuario que especifique cuál.\n\n" +
+        "PASO A — RESOLVER AMBIGÜEDAD\n" +
+        "Buscá en la lista de CURSOS Y EXÁMENES DEL USUARIO los que coincidan con el nombre mencionado (parcial o completo, sin importar mayúsculas).\n" +
+        "• Si coincide MÁS DE UNO: DETENTE. No llames ninguna función. Listá todas las coincidencias (nombre + curso + fecha) y preguntá cuál es el que el usuario quiere modificar. Esperá su respuesta antes de continuar.\n" +
+        "• Si coincide exactamente uno: identificalo internamente y avanzá al PASO B.\n" +
+        "NUNCA le pidas al usuario que te dé el ID. Los IDs son internos.\n\n" +
+
+        "PASO B — PEDIR CONFIRMACIÓN\n" +
+        "DETENTE. No llames ninguna función todavía. Mostrá un resumen claro de lo que vas a hacer y preguntá si el usuario confirma.\n" +
+        "Formato del resumen según la acción:\n" +
+        "• Editar examen: nombre del examen, curso, y qué campo(s) cambian (valor anterior → valor nuevo).\n" +
+        "• Crear examen: nombre, curso, fecha, porcentaje y nota (si aplica).\n" +
+        "• Eliminar examen: nombre, curso, fecha y porcentaje.\n" +
+        "• Crear curso: solo el nombre. NUNCA menciones eliminación de exámenes al confirmar creación.\n" +
+        "• Editar curso: nombre anterior → nombre nuevo.\n" +
+        "• Eliminar curso: nombre y advertencia de que se eliminarán todos sus exámenes.\n" +
+        "Para operaciones en lote, mostrá la lista completa de cambios de una sola vez.\n\n" +
+
+        "PASO C — EJECUTAR\n" +
+        "Solo llegás acá si el mensaje ACTUAL del usuario es una confirmación explícita ('sí', 'confirmo', 'dale', 'adelante', etc.) Y tu mensaje ANTERIOR en el historial fue el resumen del PASO B para esa acción específica.\n" +
+        "Recién entonces llamá la función correspondiente.\n\n" +
+
+        "PROHIBICIÓN ABSOLUTA: Nunca llames una función de modificación (crear/editar/eliminar) en el mismo turno en que identificás el examen, pedís datos o mostrás el resumen. SIEMPRE hay que esperar confirmación explícita en el turno siguiente.\n\n" +
 
         "Si el usuario pregunta algo ajeno a esta app, niégate educadamente.\n\n" +
 
