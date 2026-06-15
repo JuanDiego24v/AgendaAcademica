@@ -44,7 +44,7 @@ export default function Perfil() {
       setShowNuevoPeriodo(false);
       setPeriodoForm({ nombre: '', fechaInicio: '', semanas: 18 });
     } catch {
-      setPeriodoError('Error al guardar el periodo. Verificá los datos.');
+      setPeriodoError('Error al guardar el periodo. Verifica los datos.');
     } finally {
       setPeriodoLoading(false);
     }

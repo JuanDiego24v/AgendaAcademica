@@ -61,7 +61,7 @@ export default function ChatWidget() {
     } catch {
       setMessages(m => {
         const copy = [...m];
-        copy[copy.length - 1] = { text: 'Error al procesar el PDF. Verificá que sea un sílabo con texto legible.', sender: 'bot' };
+        copy[copy.length - 1] = { text: 'Error al procesar el PDF. Verifica que sea un sílabo con texto legible.', sender: 'bot' };
         return copy;
       });
     } finally {

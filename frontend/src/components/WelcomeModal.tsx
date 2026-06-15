@@ -16,7 +16,7 @@ export default function WelcomeModal() {
       await client.post('/api/periodos', { ...form, semanas: Number(form.semanas) });
       await refreshPeriodo();
     } catch {
-      setError('Error al guardar. Verificá los datos e intentá de nuevo.');
+      setError('Error al guardar. Verifica los datos e intenta de nuevo.');
       setLoading(false);
     }
   };
@@ -66,7 +66,7 @@ export default function WelcomeModal() {
             color: 'var(--muted)', textTransform: 'uppercase',
             marginBottom: 32,
           }}>
-            Configurá tu periodo estudiantil para comenzar
+            Configura tu periodo estudiantil para comenzar
           </div>
 
           <div style={{ height: 1, background: 'var(--border)', marginBottom: 28 }} />

@@ -59,7 +59,7 @@ export default function Login() {
           <div className="alert-dark-success">Sesión cerrada correctamente</div>
         )}
         {params.get('passwordChanged') && !error && (
-          <div className="alert-dark-success">Contraseña actualizada. Iniciá sesión nuevamente.</div>
+          <div className="alert-dark-success">Contraseña actualizada. Inicia sesión nuevamente.</div>
         )}
 
         <div className="auth-footer">

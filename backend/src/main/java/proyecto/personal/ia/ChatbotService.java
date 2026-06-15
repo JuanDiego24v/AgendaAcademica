@@ -119,8 +119,8 @@ public class ChatbotService {
         } catch (Exception e) {
             e.printStackTrace();
             String msg = e.getMessage() != null && e.getMessage().contains("429")
-                ? "Estoy recibiendo demasiadas consultas en este momento. Esperá unos segundos e intentá de nuevo."
-                : "Ocurrió un error al procesar tu consulta. Intentá de nuevo en un momento.";
+                ? "Estoy recibiendo demasiadas consultas en este momento. Espera unos segundos e intenta de nuevo."
+                : "Ocurrió un error al procesar tu consulta. Intenta de nuevo en un momento.";
             return new ChatbotResponse(msg, false);
         }
     }
@@ -215,7 +215,7 @@ public class ChatbotService {
                 ),
                 List.of("nombre", "fecha", "porcentaje", "curso_id")
             ),
-            tool("editar_examen", "Edita uno o más campos de un examen existente. Usá los valores actuales para los campos que no cambian. Si se provee nota, el estado se actualiza a COMPLETADO automáticamente.",
+            tool("editar_examen", "Edita uno o más campos de un examen existente. Usa los valores actuales para los campos que no cambian. Si se provee nota, el estado se actualiza a COMPLETADO automáticamente.",
                 Map.of(
                     "examen_id", prop("integer", "ID del examen a editar"),
                     "nombre", prop("string", "Nuevo nombre"),
