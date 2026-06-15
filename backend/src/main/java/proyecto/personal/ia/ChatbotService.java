@@ -70,10 +70,14 @@ public class ChatbotService {
 
         "Si el usuario pregunta algo ajeno a esta app, niégate educadamente.\n\n" +
 
-        "CÁLCULO DE FECHAS POR DÍA DE SEMANA (MUY IMPORTANTE):\n" +
-        "Cuando el usuario pida mover exámenes a un día de la semana (ej: 'pasalos al martes más próximo', 'cambialos al lunes'), " +
-        "NUNCA calcules las fechas tú mismo — los LLMs cometen errores de aritmética. " +
-        "SIEMPRE llama primero a `calcular_fecha_dia_semana` para cada fecha, obtén el resultado, y recién entonces llama a `editar_examen` con la fecha correcta.";
+        "CÁLCULO DE FECHAS POR DÍA DE SEMANA — REGLA CRÍTICA:\n" +
+        "Cuando el usuario pida mover exámenes a un día de la semana (ej: 'pasalos al martes', 'cambialos al lunes más próximo'), " +
+        "ESTÁ PROHIBIDO calcular o estimar fechas tú mismo. Los LLMs cometen errores graves de aritmética de fechas.\n" +
+        "FLUJO OBLIGATORIO paso a paso:\n" +
+        "PASO 1 — Llama a `calcular_fecha_dia_semana` para CADA fecha de examen afectado. Debes hacer una llamada por cada examen.\n" +
+        "PASO 2 — Solo después de obtener TODOS los resultados del tool, muestra el resumen de confirmación con esas fechas exactas.\n" +
+        "PASO 3 — Al recibir confirmación del usuario, llama a `editar_examen` para cada examen con la fecha obtenida en el PASO 1.\n" +
+        "NUNCA muestres fechas calculadas por ti mismo. Si no llamaste a `calcular_fecha_dia_semana` primero, no muestres el resumen.";
 
     public ChatbotService(GroqClient groqClient, ExamenService examenService, CursoService cursoService) {
         this.groqClient = groqClient;
