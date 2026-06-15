@@ -114,6 +114,7 @@ public class GroqClient {
                 if (e.getStatusCode().value() == 429) {
                     lastException = e;
                 } else {
+                    System.err.println("Groq error " + e.getStatusCode() + ": " + e.getResponseBodyAsString());
                     throw e;
                 }
             }

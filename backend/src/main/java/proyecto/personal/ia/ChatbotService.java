@@ -157,6 +157,7 @@ public class ChatbotService {
 
                 Map<String, Object> assistantMsg = new HashMap<>();
                 assistantMsg.put("role", "assistant");
+                assistantMsg.put("content", null);
                 assistantMsg.put("tool_calls", toolCallsList);
                 messages.add(assistantMsg);
                 messages.addAll(toolResultMsgs);
