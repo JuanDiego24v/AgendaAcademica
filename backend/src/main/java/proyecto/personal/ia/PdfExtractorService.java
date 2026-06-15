@@ -75,11 +75,16 @@ public class PdfExtractorService {
         log.info("[PDF] fechaInicioPeriodo={}", fechaInicioPeriodo);
 
         String textoPdfTruncado = textoPdf.length() > 6000 ? textoPdf.substring(0, 6000) : textoPdf;
+        log.info("[PDF] Enviando {} chars a Groq...", textoPdfTruncado.length());
         String prompt = "Extrae el nombre del curso y los exámenes del siguiente sílabo:\n\n" + textoPdfTruncado;
         String respuesta = groqClient.callGroqApi(SYSTEM_PROMPT_SILABO, prompt);
         respuesta = respuesta.replaceAll("```json", "").replaceAll("```", "").trim();
 
         log.info("[PDF] Respuesta Groq: {}", respuesta);
+
+        if (respuesta.startsWith("Error al comunicarse con Groq:")) {
+            throw new RuntimeException(respuesta);
+        }
 
         JsonNode root;
         try {
@@ -88,6 +93,9 @@ public class PdfExtractorService {
             log.warn("[PDF] JSON inválido de Groq, reintentando: {}", parseEx.getMessage());
             respuesta = groqClient.callGroqApi(SYSTEM_PROMPT_SILABO, prompt);
             respuesta = respuesta.replaceAll("```json", "").replaceAll("```", "").trim();
+            if (respuesta.startsWith("Error al comunicarse con Groq:")) {
+                throw new RuntimeException(respuesta);
+            }
             root = objectMapper.readTree(respuesta);
         }
 

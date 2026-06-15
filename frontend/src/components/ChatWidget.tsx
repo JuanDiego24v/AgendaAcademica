@@ -58,10 +58,12 @@ export default function ChatWidget() {
         return copy;
       });
       if (data.updated) setTimeout(() => window.location.reload(), 1500);
-    } catch {
+    } catch (err: unknown) {
+      const serverMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const displayMsg = serverMsg || 'Error al procesar el PDF. Verifica que sea un sílabo con texto legible.';
       setMessages(m => {
         const copy = [...m];
-        copy[copy.length - 1] = { text: 'Error al procesar el PDF. Verifica que sea un sílabo con texto legible.', sender: 'bot' };
+        copy[copy.length - 1] = { text: displayMsg, sender: 'bot' };
         return copy;
       });
     } finally {
