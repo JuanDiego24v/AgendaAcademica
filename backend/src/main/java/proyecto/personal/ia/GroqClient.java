@@ -86,7 +86,6 @@ public class GroqClient {
 
         Exception lastException = null;
         for (int attempt = 0; attempt < 3; attempt++) {
-            if (attempt > 0) Thread.sleep(3000L * attempt);
             try {
                 ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
 
@@ -112,8 +111,8 @@ public class GroqClient {
 
             } catch (HttpClientErrorException e) {
                 if (e.getStatusCode().value() == 429) {
-                    System.err.println("Groq 429 (attempt " + attempt + "), retrying...");
                     lastException = e;
+                    if (attempt < 2) Thread.sleep(retryDelayMs(e));
                 } else {
                     System.err.println("Groq 4xx error " + e.getStatusCode() + ": " + e.getResponseBodyAsString());
                     throw e;
@@ -121,11 +120,34 @@ public class GroqClient {
             } catch (org.springframework.web.client.HttpServerErrorException e) {
                 System.err.println("Groq 5xx error " + e.getStatusCode() + " (attempt " + attempt + "): " + e.getResponseBodyAsString());
                 lastException = e;
+                if (attempt < 2) Thread.sleep(5000L);
             } catch (org.springframework.web.client.ResourceAccessException e) {
                 System.err.println("Groq connection error (attempt " + attempt + "): " + e.getMessage());
                 lastException = e;
+                if (attempt < 2) Thread.sleep(5000L);
             }
         }
         throw lastException;
+    }
+
+    private long retryDelayMs(HttpClientErrorException e) {
+        // Prefer the Retry-After header
+        if (e.getResponseHeaders() != null) {
+            String header = e.getResponseHeaders().getFirst("retry-after");
+            if (header != null) {
+                try { return (long)(Double.parseDouble(header) * 1000) + 1000; } catch (NumberFormatException ignored) {}
+            }
+        }
+        // Fall back to parsing "try again in X.XXs" from the body
+        String body = e.getResponseBodyAsString();
+        int idx = body.indexOf("try again in ");
+        if (idx >= 0) {
+            String sub = body.substring(idx + 13);
+            int end = sub.indexOf('s');
+            if (end > 0) {
+                try { return (long)(Double.parseDouble(sub.substring(0, end)) * 1000) + 1000; } catch (NumberFormatException ignored) {}
+            }
+        }
+        return 25000L; // safe default: 25 seconds
     }
 }

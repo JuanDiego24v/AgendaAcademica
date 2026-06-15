@@ -111,7 +111,7 @@ public class ChatbotService {
         List<Map<String, Object>> messages = new ArrayList<>();
         messages.add(Map.of("role", "system", "content", systemPrompt));
 
-        int start = Math.max(0, historial.size() - 10);
+        int start = Math.max(0, historial.size() - 6);
         for (int i = start; i < historial.size(); i++) {
             ChatMessageDto msg = historial.get(i);
             String role = "bot".equals(msg.sender()) ? "assistant" : "user";
