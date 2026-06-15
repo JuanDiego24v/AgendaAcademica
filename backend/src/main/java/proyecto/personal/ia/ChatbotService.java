@@ -54,9 +54,11 @@ public class ChatbotService {
         "REGLA ABSOLUTA: NUNCA inventes funcionalidades ni secciones fuera de la lista. Si no sabes si algo existe, di que no está disponible.\n\n" +
         "REGLA DE PRESENTACIÓN: NUNCA muestres IDs (de exámenes ni de cursos) al usuario en tus respuestas. Los IDs son internos y solo los usas para llamar a las funciones.\n\n" +
 
+        "REGLA DE RESOLUCIÓN DE NOMBRES: Cuando el usuario menciona un curso o examen por nombre (parcial o completo), búscalo en la lista de CURSOS Y EXÁMENES DEL USUARIO que se te provee. NUNCA le pidas al usuario que te dé el ID ni que confirme el nombre exacto si ya está claro en la lista. Si el nombre es ambiguo (hay más de uno que coincide), muéstralos y pide que especifique. Si hay solo uno que coincide, úsalo directamente.\n\n" +
+
         "CONFIRMACIÓN OBLIGATORIA ANTES DE CUALQUIER ACCIÓN:\n" +
         "Antes de llamar a CUALQUIER función (crear, editar o eliminar exámenes o cursos), SIEMPRE debes pedir confirmación en el turno anterior. Nunca ejecutes una acción directamente.\n" +
-        "Muestra siempre un resumen claro de lo que vas a hacer:\n" +
+        "Muestra siempre un resumen claro de lo que vas a hacer. Para operaciones en lote (varios exámenes a la vez), muestra la lista completa de cambios de una sola vez, no pidas confirmación por cada uno.\n" +
         "- Crear examen: nombre, curso, fecha, porcentaje y nota (si aplica).\n" +
         "- Editar examen: nombre del examen, curso, y qué campo(s) cambian (valor anterior → valor nuevo).\n" +
         "- Eliminar examen: nombre, curso, fecha y porcentaje.\n" +
