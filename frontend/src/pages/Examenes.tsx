@@ -25,6 +25,23 @@ interface ExamenForm {
 
 const emptyForm: ExamenForm = { nombre: '', fecha: '', porcentaje: '', estado: 'PENDIENTE', nota: '' };
 
+const formatDateInput = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+};
+
+const toISO = (dmy: string) => {
+  const [d, m, y] = dmy.split('/');
+  return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+};
+
+const fromISO = (iso: string) => {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+};
+
 export default function Examenes() {
   const [params, setParams] = useSearchParams();
   const [data, setData] = useState<PageData | null>(null);
@@ -61,7 +78,7 @@ export default function Examenes() {
 
   const handleSaveExamen = async () => {
     const payload = {
-      nombre: form.nombre, fecha: form.fecha,
+      nombre: form.nombre, fecha: toISO(form.fecha),
       porcentaje: Number(form.porcentaje), estado: form.estado,
       nota: form.estado === 'COMPLETADO' && form.nota ? Number(form.nota) : null,
       cursoId: data?.cursoSeleccionado,
@@ -75,7 +92,7 @@ export default function Examenes() {
   const handleEditExamen = async () => {
     if (!editId) return;
     const payload = {
-      nombre: form.nombre, fecha: form.fecha,
+      nombre: form.nombre, fecha: toISO(form.fecha),
       porcentaje: Number(form.porcentaje), estado: form.estado,
       nota: form.estado === 'COMPLETADO' && form.nota ? Number(form.nota) : null,
     };
@@ -88,7 +105,7 @@ export default function Examenes() {
 
   const openEdit = (e: Examen) => {
     setEditId(e.id);
-    setForm({ nombre: e.nombre, fecha: e.fecha, porcentaje: String(e.porcentaje), estado: e.estado, nota: e.nota != null ? String(e.nota) : '' });
+    setForm({ nombre: e.nombre, fecha: fromISO(e.fecha), porcentaje: String(e.porcentaje), estado: e.estado, nota: e.nota != null ? String(e.nota) : '' });
     setShowEditModal(true);
   };
 
@@ -134,7 +151,7 @@ export default function Examenes() {
 
   if (!data) return <Layout><div style={{ color: 'var(--muted)', fontFamily: "'Space Mono',monospace", fontSize: 12 }}>Cargando...</div></Layout>;
 
-  const ExamenFormFields = ({ prefix: _ }: { prefix: string }) => (
+  const examenFormFields = (
     <>
       <div className="mb-3">
         <label className="form-label">Nombre</label>
@@ -142,7 +159,10 @@ export default function Examenes() {
       </div>
       <div className="mb-3">
         <label className="form-label">Fecha</label>
-        <input type="date" className="form-control" value={form.fecha} onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))} required />
+        <input type="text" className="form-control" placeholder="DD/MM/AAAA" maxLength={10}
+          value={form.fecha}
+          onChange={e => setForm(f => ({ ...f, fecha: formatDateInput(e.target.value) }))}
+          required />
       </div>
       <div className="mb-3">
         <label className="form-label">Porcentaje</label>
@@ -279,7 +299,7 @@ export default function Examenes() {
               <button className="modal-close" onClick={() => setShowAddModal(false)}>✕</button>
             </div>
             <div className="modal-body">
-              <ExamenFormFields prefix="nuevo" />
+              {examenFormFields}
               <div style={{ textAlign: 'right' }}>
                 <button className="btn-save" onClick={handleSaveExamen}>Guardar</button>
               </div>
@@ -308,7 +328,7 @@ export default function Examenes() {
               <button className="modal-close" onClick={() => setShowEditModal(false)}>✕</button>
             </div>
             <div className="modal-body">
-              <ExamenFormFields prefix="editar" />
+              {examenFormFields}
             </div>
             <div className="modal-footer">
               <button className="btn-save" onClick={handleEditExamen}>Guardar cambios</button>
