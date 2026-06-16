@@ -159,10 +159,25 @@ export default function Examenes() {
       </div>
       <div className="mb-3">
         <label className="form-label">Fecha</label>
-        <input type="text" className="form-control" placeholder="DD/MM/AAAA" maxLength={10}
-          value={form.fecha}
-          onChange={e => setForm(f => ({ ...f, fecha: formatDateInput(e.target.value) }))}
-          required />
+        <div style={{ position: 'relative' }}>
+          <input type="text" className="form-control" placeholder="DD/MM/AAAA" maxLength={10}
+            value={form.fecha}
+            onChange={e => setForm(f => ({ ...f, fecha: formatDateInput(e.target.value) }))}
+            style={{ paddingRight: 36 }}
+            required />
+          <input
+            type="date"
+            onChange={e => e.target.value && setForm(f => ({ ...f, fecha: fromISO(e.target.value) }))}
+            style={{
+              position: 'absolute', right: 0, top: 0, bottom: 0,
+              width: 36, opacity: 0, cursor: 'pointer',
+            }}
+          />
+          <span style={{
+            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+            color: 'var(--muted)', fontSize: 14, pointerEvents: 'none',
+          }}>📅</span>
+        </div>
       </div>
       <div className="mb-3">
         <label className="form-label">Porcentaje</label>
