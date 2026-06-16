@@ -19,17 +19,23 @@ interface AuthContextType extends AuthState {
   isAuthenticated: boolean;
   periodoActivo: PeriodoActivo | null;
   cargandoPeriodo: boolean;
+  periodoFetchError: boolean;
   refreshPeriodo: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-async function fetchPeriodo(): Promise<PeriodoActivo | null> {
+type FetchPeriodoResult =
+  | { ok: true; data: PeriodoActivo }
+  | { ok: false; notFound: boolean };
+
+async function fetchPeriodo(): Promise<FetchPeriodoResult> {
   try {
     const r = await client.get<PeriodoActivo>('/api/periodos/activo');
-    return r.data;
-  } catch {
-    return null;
+    return { ok: true, data: r.data };
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status;
+    return { ok: false, notFound: status === 404 };
   }
 }
 
@@ -40,16 +46,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [periodoActivo, setPeriodoActivo] = useState<PeriodoActivo | null>(null);
   const [cargandoPeriodo, setCargandoPeriodo] = useState(!!localStorage.getItem('token'));
+  const [periodoFetchError, setPeriodoFetchError] = useState(false);
 
   useEffect(() => {
     if (auth.token) {
       setCargandoPeriodo(true);
-      fetchPeriodo().then(p => {
-        setPeriodoActivo(p);
+      setPeriodoFetchError(false);
+      fetchPeriodo().then(result => {
+        if (result.ok) {
+          setPeriodoActivo(result.data);
+        } else {
+          setPeriodoActivo(null);
+          setPeriodoFetchError(!result.notFound);
+        }
         setCargandoPeriodo(false);
       });
     } else {
       setPeriodoActivo(null);
+      setPeriodoFetchError(false);
       setCargandoPeriodo(false);
     }
   }, [auth.token]);
@@ -68,15 +82,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshPeriodo = async () => {
-    const p = await fetchPeriodo();
-    setPeriodoActivo(p);
+    const result = await fetchPeriodo();
+    if (result.ok) {
+      setPeriodoActivo(result.data);
+      setPeriodoFetchError(false);
+    } else {
+      setPeriodoActivo(null);
+      setPeriodoFetchError(!result.notFound);
+    }
   };
 
   return (
     <AuthContext.Provider value={{
       ...auth, login, logout,
       isAuthenticated: !!auth.token,
-      periodoActivo, cargandoPeriodo, refreshPeriodo,
+      periodoActivo, cargandoPeriodo, periodoFetchError, refreshPeriodo,
     }}>
       {children}
     </AuthContext.Provider>
