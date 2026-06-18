@@ -37,6 +37,9 @@ public class Usuario implements UserDetails {
     @Column(name = "nota_minima", nullable = false)
     private Double notaMinimaAprobatoria = 12.0;
 
+    @Column(nullable = false, length = 50)
+    private String tema = "dark";
+
     // RELACIÓN CON PERIODOS
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -96,6 +99,14 @@ public class Usuario implements UserDetails {
 
     public void setNotaMinimaAprobatoria(Double notaMinimaAprobatoria) {
         this.notaMinimaAprobatoria = notaMinimaAprobatoria;
+    }
+
+    public String getTema() {
+        return tema;
+    }
+
+    public void setTema(String tema) {
+        this.tema = tema;
     }
 
     public void setEnabled(boolean enabled) {

@@ -51,7 +51,14 @@ public class ApiPerfilController {
                 usuario.getEmail(),
                 periodoDto,
                 totalCursos,
-                totalExamenes
+                totalExamenes,
+                usuario.getTema()
         ));
+    }
+
+    @PutMapping("/tema")
+    public ResponseEntity<Void> actualizarTema(@RequestBody java.util.Map<String, String> body) {
+        usuarioService.actualizarTema(body.get("tema"));
+        return ResponseEntity.ok().build();
     }
 }

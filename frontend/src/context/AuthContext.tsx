@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import client from '../api/client';
+import { applyTheme } from '../themes';
 
 export interface PeriodoActivo {
   id: number;
@@ -11,6 +12,7 @@ export interface PeriodoActivo {
 interface AuthState {
   token: string | null;
   username: string | null;
+  tema: string;
 }
 
 interface AuthContextType extends AuthState {
@@ -21,6 +23,7 @@ interface AuthContextType extends AuthState {
   cargandoPeriodo: boolean;
   periodoFetchError: boolean;
   refreshPeriodo: () => Promise<void>;
+  setTemaUsuario: (tema: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -43,10 +46,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<AuthState>({
     token: localStorage.getItem('token'),
     username: localStorage.getItem('username'),
+    tema: localStorage.getItem('tema') ?? 'dark',
   });
   const [periodoActivo, setPeriodoActivo] = useState<PeriodoActivo | null>(null);
   const [cargandoPeriodo, setCargandoPeriodo] = useState(!!localStorage.getItem('token'));
   const [periodoFetchError, setPeriodoFetchError] = useState(false);
+
+  useEffect(() => {
+    applyTheme(auth.tema);
+  }, []);
 
   useEffect(() => {
     if (auth.token) {
@@ -71,13 +79,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (token: string, username: string) => {
     localStorage.setItem('token', token);
     localStorage.setItem('username', username);
-    setAuth({ token, username });
+    setAuth(prev => ({ ...prev, token, username }));
+    client.get<{ tema: string }>('/api/perfil').then(r => {
+      const t = r.data.tema ?? 'dark';
+      localStorage.setItem('tema', t);
+      applyTheme(t);
+      setAuth(prev => ({ ...prev, tema: t }));
+    }).catch(() => {});
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    setAuth({ token: null, username: null });
+    localStorage.removeItem('tema');
+    applyTheme('dark');
+    setAuth({ token: null, username: null, tema: 'dark' });
     setPeriodoActivo(null);
   };
 
@@ -92,11 +108,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setTemaUsuario = async (nuevoTema: string) => {
+    await client.put('/api/perfil/tema', { tema: nuevoTema });
+    localStorage.setItem('tema', nuevoTema);
+    applyTheme(nuevoTema);
+    setAuth(prev => ({ ...prev, tema: nuevoTema }));
+  };
+
   return (
     <AuthContext.Provider value={{
       ...auth, login, logout,
       isAuthenticated: !!auth.token,
       periodoActivo, cargandoPeriodo, periodoFetchError, refreshPeriodo,
+      setTemaUsuario,
     }}>
       {children}
     </AuthContext.Provider>

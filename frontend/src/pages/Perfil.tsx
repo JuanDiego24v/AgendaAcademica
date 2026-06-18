@@ -13,7 +13,7 @@ interface PerfilData {
 }
 
 export default function Perfil() {
-  const { logout, periodoActivo, refreshPeriodo } = useAuth();
+  const { logout, periodoActivo, refreshPeriodo, tema, setTemaUsuario } = useAuth();
   const navigate = useNavigate();
 
   const [perfil, setPerfil] = useState<PerfilData | null>(null);
@@ -190,6 +190,57 @@ export default function Perfil() {
           </form>
         </div>
       )}
+
+      {/* ── APARIENCIA ── */}
+      <div className="section-title">Apariencia</div>
+      <div style={{
+        background: 'var(--black-card)', border: '1px solid var(--border)',
+        borderRadius: 4, padding: '28px 32px', marginBottom: 40,
+      }}>
+        <div className="form-label" style={{ marginBottom: 16 }}>Tema de color</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {[
+            { key: 'dark', label: 'Oscuro clásico', preview: '#E87620', bg: '#161616' },
+            { key: 'purple-light', label: 'Púrpura claro', preview: '#8B5CF6', bg: '#ffffff' },
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTemaUsuario(t.key)}
+              style={{
+                background: t.bg,
+                border: `2px solid ${tema === t.key ? t.preview : 'rgba(128,128,128,0.2)'}`,
+                borderRadius: 4, padding: '16px 20px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 12,
+                transition: 'border-color 0.2s ease',
+                minWidth: 180,
+              }}
+            >
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: t.preview,
+                flexShrink: 0,
+              }} />
+              <div style={{ textAlign: 'left' }}>
+                <div style={{
+                  fontFamily: "'Bebas Neue', sans-serif", fontSize: 16,
+                  color: t.key === 'dark' ? '#f0ede8' : '#1a1025',
+                  letterSpacing: 0.5,
+                }}>
+                  {t.label}
+                </div>
+                {tema === t.key && (
+                  <div style={{
+                    fontFamily: "'Space Mono', monospace", fontSize: 9,
+                    color: t.preview, letterSpacing: 1.5, textTransform: 'uppercase', marginTop: 2,
+                  }}>
+                    Activo
+                  </div>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* ── SEGURIDAD ── */}
       <div className="section-title">Seguridad</div>

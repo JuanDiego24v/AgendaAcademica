@@ -5,5 +5,6 @@ public record PerfilDto(
         String email,
         PeriodoDto periodoActivo,
         long totalCursos,
-        long totalExamenes
+        long totalExamenes,
+        String tema
 ) {}

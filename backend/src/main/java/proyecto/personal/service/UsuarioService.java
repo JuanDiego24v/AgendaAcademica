@@ -127,6 +127,13 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
+    public void actualizarTema(String tema) {
+        Usuario usuario = obtenerUsuarioActual();
+        usuario.setTema(tema);
+        usuarioRepository.save(usuario);
+    }
+
     public void guardar(Usuario usuario) {
         usuarioRepository.save(usuario);
     }
