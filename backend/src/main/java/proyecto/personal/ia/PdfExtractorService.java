@@ -74,9 +74,8 @@ public class PdfExtractorService {
         log.info("[PDF] Texto extraído ({} chars): {}", textoPdf.length(), textoPdf.substring(0, Math.min(500, textoPdf.length())));
         log.info("[PDF] fechaInicioPeriodo={}", fechaInicioPeriodo);
 
-        String textoPdfTruncado = textoPdf.length() > 6000 ? textoPdf.substring(0, 6000) : textoPdf;
-        log.info("[PDF] Enviando {} chars a Groq...", textoPdfTruncado.length());
-        String prompt = "Extrae el nombre del curso y los exámenes del siguiente sílabo:\n\n" + textoPdfTruncado;
+        log.info("[PDF] Enviando {} chars a Groq...", textoPdf.length());
+        String prompt = "Extrae el nombre del curso y los exámenes del siguiente sílabo:\n\n" + textoPdf;
         String respuesta = groqClient.callGroqApi(SYSTEM_PROMPT_SILABO, prompt);
         respuesta = respuesta.replaceAll("```json", "").replaceAll("```", "").trim();
 
